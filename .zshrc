@@ -104,6 +104,12 @@ alias pacman="sudo pacman --color auto"
 alias update="sudo pacman -Syyu"
 alias upd="sudo pacman -Syyu"
 
+#pamac
+alias pamac-unlock="sudo rm /var/tmp/pamac/dbs/db.lock"
+alias pamac-update="sudo pamac update --no-confirm"
+
+alias upall="update && pamac-update"
+
 #ps
 alias psa="ps auxf"
 alias psgrep="ps aux | grep -v grep | grep -i -e VSZ -e"
@@ -121,6 +127,10 @@ alias hw="hwinfo --short"
 
 #fastfetch --short
 alias ff="fastfetch"
+alias ffp="pokeget random --hide-name | fastfetch --file-raw -"
+
+#btop --short
+alias bt="btop"
 
 #audio check pulseaudio or pipewire
 alias audio="pactl info | grep 'Server Name'"
@@ -176,9 +186,6 @@ ex ()
     echo "'$1' is not a valid file"
   fi
 }
-
-#pamac
-alias pamac-unlock="sudo rm /var/tmp/pamac/dbs/db.lock"
 
 #conda
 alias etconda="conda activate"
