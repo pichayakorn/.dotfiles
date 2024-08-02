@@ -1,207 +1,151 @@
+# If you come from bash you might have to change your $PATH.
+# export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+
+# Path to your Oh My Zsh installation.
+export ZSH="$HOME/.oh-my-zsh"
+
+# Set name of the theme to load --- if set to "random", it will
+# load a random theme each time Oh My Zsh is loaded, in which case,
+# to know which specific one was loaded, run: echo $RANDOM_THEME
+# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+# ZSH_THEME="robbyrussell"
+ZSH_THEME="bira-custom"
+
+# Set list of themes to pick from when loading at random
+# Setting this variable when ZSH_THEME=random will cause zsh to load
+# a theme from this variable instead of looking in $ZSH/themes/
+# If set to an empty array, this variable will have no effect.
+# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+
+# Uncomment the following line to use case-sensitive completion.
+# CASE_SENSITIVE="true"
+
+# Uncomment the following line to use hyphen-insensitive completion.
+# Case-sensitive completion must be off. _ and - will be interchangeable.
+# HYPHEN_INSENSITIVE="true"
+
+# Uncomment one of the following lines to change the auto-update behavior
+# zstyle ':omz:update' mode disabled  # disable automatic updates
+# zstyle ':omz:update' mode auto      # update automatically without asking
+zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+
+# Uncomment the following line to change how often to auto-update (in days).
+# zstyle ':omz:update' frequency 13
+
+# Uncomment the following line if pasting URLs and other text is messed up.
+# DISABLE_MAGIC_FUNCTIONS="true"
+
+# Uncomment the following line to disable colors in ls.
+# DISABLE_LS_COLORS="true"
+
+# Uncomment the following line to disable auto-setting terminal title.
+# DISABLE_AUTO_TITLE="true"
+
+# Uncomment the following line to enable command auto-correction.
+# ENABLE_CORRECTION="true"
+
+# Uncomment the following line to display red dots whilst waiting for completion.
+# You can also set it to another string to have that shown instead of the default red dots.
+# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
+# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
+# COMPLETION_WAITING_DOTS="true"
+
+# Uncomment the following line if you want to disable marking untracked files
+# under VCS as dirty. This makes repository status check for large repositories
+# much, much faster.
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# Uncomment the following line if you want to change the command execution time
+# stamp shown in the history command output.
+# You can set one of the optional three formats:
+# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
+# or set a custom format using the strftime function format specifications,
+# see 'man strftime' for details.
+# HIST_STAMPS="mm/dd/yyyy"
+
+# Would you like to use another custom folder than $ZSH/custom?
+ZSH_CUSTOM="/home/$USER/.config/zsh/custom"
+
+# Which plugins would you like to load?
+# Standard plugins can be found in $ZSH/plugins/
+# Custom plugins may be added to $ZSH_CUSTOM/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# Add wisely, as too many plugins slow down shell startup.
+plugins=(
+  # Build-in
+  git
+  conda-env
+  z
+  nvm
+  # Custom
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+  fast-syntax-highlighting
+  zsh-autocomplete
+)
+
+source $ZSH/oh-my-zsh.sh
+
+# User configuration
+
+# export MANPATH="/usr/local/man:$MANPATH"
+
+# You may need to manually set your language environment
+export LANG=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='vim'
+else
+  export EDITOR='nvim'
+fi
+
+# Compilation flags
+# export ARCHFLAGS="-arch $(uname -m)"
+
+# Set personal aliases, overriding those provided by Oh My Zsh libs,
+# plugins, and themes. Aliases can be placed here, though Oh My Zsh
+# users are encouraged to define aliases within a top-level file in
+# the $ZSH_CUSTOM folder, with .zsh extension. Examples:
+# - $ZSH_CUSTOM/aliases.zsh
+# - $ZSH_CUSTOM/macos.zsh
+# For a full list of active aliases, run `alias`.
+#
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
+
 # Use powerline
 USE_POWERLINE="true"
 # Has weird character width
 # Example:
 #    is not a diamond
 HAS_WIDECHARS="false"
-# Source manjaro-zsh-configuration
-if [[ -e /usr/share/zsh/manjaro-zsh-config ]]; then
-  source /usr/share/zsh/manjaro-zsh-config
-fi
-# Use manjaro zsh prompt
-if [[ -e /usr/share/zsh/manjaro-zsh-prompt ]]; then
-  source /usr/share/zsh/manjaro-zsh-prompt
+
+# Source user-custom-zsh-configuration
+if [[ -e $ZSH_CUSTOM/config.zsh ]]; then
+  source $ZSH_CUSTOM/config.zsh
 fi
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/home/hachi/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+__conda_setup="$("/home/$USER/miniconda3/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
+  eval "$__conda_setup"
 else
-    if [ -f "/home/hachi/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/home/hachi/miniconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/home/hachi/miniconda3/bin:$PATH"
-    fi
+  if [ -f "/home/$USER/miniconda3/etc/profile.d/conda.sh" ]; then
+    . "/home/$USER/miniconda3/etc/profile.d/conda.sh"
+  else
+    export PATH="/home/$USER/miniconda3/bin:$PATH"
+  fi
 fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-# Z directory jumper
-source /home/hachi/z/z.sh
-
-unsetopt correct
-
-# Make the default editor
-export EDITOR='nvim'
-
-### ALIASES ###
-alias vim="nvim"
-alias vi="nvim"
-alias oldvim="vim"
-
-#list
-alias ls='exa --color=auto'
-alias la='ls -a'
-alias ll='ls -alh'
-alias l='ls'
-alias l.="ls -A | grep -E '^\.'"
-alias listdir="ls -d */ > list"
-
-#pacman
-alias sps='sudo pacman -S'
-alias spr='sudo pacman -R'
-alias sprs='sudo pacman -Rs'
-alias sprdd='sudo pacman -Rdd'
-alias spqo='sudo pacman -Qo'
-alias spsii='sudo pacman -Sii'
-
-# show the list of packages that need this package - depends mpv as example
-function_depends()  {
-    search=$(echo "$1")
-    sudo pacman -Sii $search | grep "Required" | sed -e "s/Required By     : //g" | sed -e "s/  /\n/g"
-    }
-
-alias depends='function_depends'
-
-#fix obvious typo's
-alias cd..='cd ..'
-alias pdw='pwd'
-alias udpate='sudo pacman -Syyu'
-alias upate='sudo pacman -Syyu'
-alias updte='sudo pacman -Syyu'
-alias updqte='sudo pacman -Syyu'
-
-## Colorize the grep command output for ease of use (good for log files)##
-alias grep='grep --color=auto'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
-
-#readable output
-alias df='df -h'
-
-#setlocale
-alias setlocale="sudo localectl set-locale LANG=en_US.UTF-8"
-alias setlocales="sudo localectl set-x11-keymap be && sudo localectl set-locale LANG=en_US.UTF-8"
-
-#pacman unlock
-alias unlock="sudo rm /var/lib/pacman/db.lck"
-alias rmpacmanlock="sudo rm /var/lib/pacman/db.lck"
-
-#free
-alias free="free -mt"
-
-#continue download
-alias wget="wget -c"
-
-#userlist
-alias userlist="cut -d: -f1 /etc/passwd | sort"
-
-# Aliases for software managment
-# pacman
-alias pacman="sudo pacman --color auto"
-alias update="sudo pacman -Syyu"
-alias upd="sudo pacman -Syyu"
-
-#pamac
-alias pamac-unlock="sudo rm /var/tmp/pamac/dbs/db.lock"
-alias pamac-update="sudo pamac update --no-confirm"
-
-alias upall="update && pamac-update"
-
-#ps
-alias psa="ps auxf"
-alias psgrep="ps aux | grep -v grep | grep -i -e VSZ -e"
-
-#add new fonts
-alias update-fc='sudo fc-cache -fv'
-
-#switch between bash and zsh
-alias tobash="sudo chsh $USER -s /bin/bash && echo 'Now log out.'"
-alias tozsh="sudo chsh $USER -s /bin/zsh && echo 'Now log out.'"
-#alias tofish="sudo chsh $USER -s /bin/fish && echo 'Now log out.'"
-
-#hardware info --short
-alias hw="hwinfo --short"
-
-#fastfetch --short
-alias ff="fastfetch"
-alias ffp="pokeget random --hide-name | fastfetch --file-raw -"
-
-#btop --short
-alias bt="btop"
-
-#audio check pulseaudio or pipewire
-alias audio="pactl info | grep 'Server Name'"
-
-#check vulnerabilities microcode
-alias microcode='grep . /sys/devices/system/cpu/vulnerabilities/*'
-
-#get fastest mirrors in your neighborhood
-alias mirror='sudo pacman-mirrors --fasttrack 10 && sudo pacman -Syyu'
-
-#edit configuration files
-alias vb="$EDITOR ~/.bashrc"
-alias vz="$EDITOR ~/.zshrc"
-#alias vf="$EDITOR ~/.config/fish/config.fish"
-alias valacritty="$EDITOR /home/$USER/.config/alacritty/alacritty.toml"
-alias vfastfetch="$EDITOR /home/$USER/.config/fastfetch/config.jsonc"
-
-#source files
-alias sb="source ~/.bashrc"
-alias sz="source ~/.zshrc"
-
-#shutdown or reboot
-alias ssn="sudo shutdown now"
-alias sr="reboot"
-
-#give a list of the kernels installed
-alias kernel="ls /usr/lib/modules"
-alias kernels="ls /usr/lib/modules"
-
-# # ex = EXtractor for all kinds of archives
-# # usage: ex <file>
-ex ()
-{
-  if [ -f $1 ] ; then
-    case $1 in
-      *.tar.bz2)   tar xjf $1   ;;
-      *.tar.gz)    tar xzf $1   ;;
-      *.bz2)       bunzip2 $1   ;;
-      *.rar)       unrar x $1   ;;
-      *.gz)        gunzip $1    ;;
-      *.tar)       tar xf $1    ;;
-      *.tbz2)      tar xjf $1   ;;
-      *.tgz)       tar xzf $1   ;;
-      *.zip)       unzip $1     ;;
-      *.Z)         uncompress $1;;
-      *.7z)        7z x $1      ;;
-      *.deb)       ar x $1      ;;
-      *.tar.xz)    tar xf $1    ;;
-      *.tar.zst)   tar xf $1    ;;
-      *)           echo "'$1' cannot be extracted via ex()" ;;
-    esac
-  else
-    echo "'$1' is not a valid file"
-  fi
-}
-
-#conda
-alias etconda="conda activate"
-alias exconda="conda deactivate"
-alias lsconda="conda env list"
-
-#git
-alias g="git"
-source /usr/share/nvm/init-nvm.sh
-
 # pnpm
-export PNPM_HOME="/home/hachi/.local/share/pnpm"
+export PNPM_HOME="/home/$USER/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
-
-alias pn=pnpm

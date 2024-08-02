@@ -9,3 +9,10 @@
 *.log
 *.log.*
 *.sig
+
+# User
+*.bak
+
+# Zsh custom remote plugins
+.config/zsh/custom/plugins/fast-syntax-highlighting
+.config/zsh/custom/plugins/zsh*
