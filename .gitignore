@@ -16,6 +16,8 @@
 # Zsh custom remote plugins
 .config/zsh/custom/plugins/fast-syntax-highlighting
 .config/zsh/custom/plugins/zsh*
+# Zsh custom env
+env.zsh
 
 # Lazyvim plugins state
 lazy-lock.json

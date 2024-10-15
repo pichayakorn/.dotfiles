@@ -1,7 +1,10 @@
 ### ALIASES ###
+alias v="nvim"
 alias vim="nvim"
 alias vi="nvim"
 alias oldvim="vim"
+
+alias code="vscodium"
 
 # list
 # File and Dir colors for ls and other outputs
@@ -121,8 +124,8 @@ alias microcode='grep . /sys/devices/system/cpu/vulnerabilities/*'
 alias mirror='sudo pacman-mirrors --fasttrack 10 && sudo pacman -Syyu'
 
 # edit configuration files
-alias vb="$EDITOR ~/.bashrc"
-alias vz="$EDITOR ~/.zshrc"
+alias vb="$EDITOR /home/$USER/.bashrc"
+alias vz="$EDITOR /home/$USER/.zshrc"
 # alias vf="$EDITOR ~/.config/fish/config.fish"
 alias valacritty="$EDITOR /home/$USER/.config/alacritty/alacritty.toml"
 alias vfastfetch="$EDITOR /home/$USER/.config/fastfetch/config.jsonc"
@@ -166,6 +169,9 @@ ex ()
   fi
 }
 
+# Python
+alias py="python"
+
 # conda
 alias etconda="conda activate"
 alias exconda="conda deactivate"
@@ -196,3 +202,12 @@ bak() {
   fi
 }
 
+# Zerotier-one
+alias ztstart="sudo systemctl start zerotier-one"
+alias ztstop="sudo systemctl stop zerotier-one"
+alias ztstatus="sudo systemctl status zerotier-one"
+alias zt="sudo zerotier-cli"
+alias zti="zt info"
+alias ztj="zt join $ZT_RU_ICE"
+alias ztl="zt listnetworks"
+alias ztx="zt leave $ZT_RU_ICE"
