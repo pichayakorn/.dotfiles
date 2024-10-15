@@ -22,11 +22,11 @@
 # background = "#222222"
 # foreground = "#F9F9F9"
 
-[env]
-TERM = "xterm-256color"
+# [env]
+# TERM = "xterm-256color"
 
 [font]
-size = 12.0
+size = 14.0
 
 [font.bold]
 family = "hack"
@@ -55,5 +55,5 @@ history = 50000
 opacity = 0.9
 
 [window.dimensions]
-columns = 100 
+columns = 100
 lines = 32
