@@ -1,4 +1,14 @@
 ### ALIASES ###
+
+# Preferred editor for local and remote sessions
+if [[ -n $SSH_CONNECTION ]]; then
+#  export EDITOR='vim'
+  export EDITOR='/usr/bin/vim'
+else
+#  export EDITOR='nvim'
+  export EDITOR='/usr/bin/nvim'
+fi
+
 alias v="nvim"
 alias vim="nvim"
 alias vi="nvim"
@@ -208,6 +218,4 @@ alias ztstop="sudo systemctl stop zerotier-one"
 alias ztstatus="sudo systemctl status zerotier-one"
 alias zt="sudo zerotier-cli"
 alias zti="zt info"
-alias ztj="zt join $ZT_RU_ICE"
 alias ztl="zt listnetworks"
-alias ztx="zt leave $ZT_RU_ICE"
