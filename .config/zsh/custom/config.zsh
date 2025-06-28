@@ -26,12 +26,3 @@ SAVEHIST=10000
 #export EDITOR=/usr/bin/nano
 #export VISUAL=/usr/bin/nano
 WORDCHARS=${WORDCHARS//\/[&.;]}                                 # Don't consider certain characters part of the word
-
-# Preferred editor for local and remote sessions
-if [[ -n $SSH_CONNECTION ]]; then
-#  export EDITOR='vim'
-  export EDITOR='/usr/bin/vim'
-else
-#  export EDITOR='nvim'
-  export EDITOR='/usr/bin/nvim'
-fi

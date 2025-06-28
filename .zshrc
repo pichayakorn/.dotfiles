@@ -1,4 +1,20 @@
-export TERM=alacritty
+# Set TERM to alacritty if the system is Linux
+if [[ "$(uname -s)" == "Linux" ]]; then
+  export TERM=alacritty
+fi
+
+# Preferred editor for local and remote sessions
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR="$(which vim)"
+else
+  export EDITOR="$(which nvim)"
+fi
+
+# Invoking GPG-AGENT
+# macOS: pinentry-mac @ $HOME/.gnupg/gpg-agent.conf
+# GPG_TTY=$(tty)
+# export GPG_TTY
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
@@ -65,7 +81,7 @@ zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 # HIST_STAMPS="mm/dd/yyyy"
 
 # Would you like to use another custom folder than $ZSH/custom?
-export ZSH_CUSTOM="/home/$USER/.config/zsh/custom"
+export ZSH_CUSTOM="$HOME/.config/zsh/custom"
 
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
@@ -78,11 +94,12 @@ plugins=(
   conda-env
   z
   nvm
+  nodenv
   # Custom
   zsh-autosuggestions
-  zsh-syntax-highlighting
+  # zsh-syntax-highlighting
   fast-syntax-highlighting
-  zsh-autocomplete
+  # zsh-autocomplete
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -93,13 +110,6 @@ source $ZSH/oh-my-zsh.sh
 
 # You may need to manually set your language environment
 export LANG=en_US.UTF-8
-
-# Preferred editor for local and remote sessions
-if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR='vim'
-else
-  export EDITOR='nvim'
-fi
 
 # Compilation flags
 # export ARCHFLAGS="-arch $(uname -m)"
@@ -130,21 +140,21 @@ fi
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$("/home/$USER/miniconda3/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
+__conda_setup="$("$HOME/miniconda3/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
   eval "$__conda_setup"
 else
-  if [ -f "/home/$USER/miniconda3/etc/profile.d/conda.sh" ]; then
-    . "/home/$USER/miniconda3/etc/profile.d/conda.sh"
+  if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+    . "$HOME/miniconda3/etc/profile.d/conda.sh"
   else
-    export PATH="/home/$USER/miniconda3/bin:$PATH"
+    export PATH="$HOME/miniconda3/bin:$PATH"
   fi
 fi
 unset __conda_setup
 # <<< conda initialize <<<
 
 # pnpm
-export PNPM_HOME="/home/$USER/.local/share/pnpm"
+export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ZSH_CUSTOM="/home/$USER/.config/zsh/custom"
+ZSH_CUSTOM="$HOME/.config/zsh/custom"
 
 # Path to the configuration file
 PLUGIN_CONF="$ZSH_CUSTOM/scripts/remote-plugins.conf"
