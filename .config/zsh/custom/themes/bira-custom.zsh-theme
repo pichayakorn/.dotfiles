@@ -3,6 +3,7 @@ local user_host="%B%(!.%{$fg[red]%}.%{$fg[green]%})%n@%m%{$reset_color%} "
 local user_symbol='%(!.#.$)'
 local current_dir="%B%{$fg[blue]%}%~ %{$reset_color%}"
 local conda_prompt='$(conda_prompt_info)'
+local node_prompt='$(node_prompt_info)'
 
 local vcs_branch='$(git_prompt_info)$(hg_prompt_info)'
 local rvm_ruby='$(ruby_prompt_info)'
@@ -15,7 +16,7 @@ fi
 
 ZSH_THEME_RVM_PROMPT_OPTIONS="i v g"
 
-PROMPT="╭─${user_host}${current_dir}${vcs_branch}${rvm_ruby}${venv_prompt}${kube_prompt}${conda_prompt}
+PROMPT="╭─${user_host}${current_dir}${vcs_branch}${rvm_ruby}${venv_prompt}${kube_prompt}${conda_prompt}${node_prompt}
 ╰─%B${user_symbol}%b "
 RPROMPT="%B${return_code}%b"
 
