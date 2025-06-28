@@ -60,7 +60,7 @@
   required = true
   process = git-lfs filter-process
 [ghq]
-  root = ~/.ghq
+  root = ~/ghq
 [commit]
   gpgsign = true
 [init]
