@@ -9,7 +9,7 @@ function get_conda_python_version() {
 
 # Define Zsh prompt components
 ZSH_THEME_CONDA_PREFIX='%F{cyan}‹'
-ZSH_THEME_CONDA_SUFFIX='›%f'
+ZSH_THEME_CONDA_SUFFIX='›%f '
 
 # Function to display Conda environment and Python version
 function conda_prompt_info() {
