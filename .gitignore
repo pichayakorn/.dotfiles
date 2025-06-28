@@ -22,3 +22,11 @@ env.zsh
 # Lazyvim plugins state
 lazy-lock.json
 lazyvim.json
+
+# ZED Editor
+.config/zed/embeddings/*
+.config/zed/conversations/*
+.config/zed/.*
+
+.config/zed/*
+!.config/zed/*.json
