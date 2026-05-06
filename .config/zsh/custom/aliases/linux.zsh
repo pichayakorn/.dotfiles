@@ -1,19 +1,7 @@
 alias code="vscodium"
 
 # list
-# File and Dir colors for ls and other outputs
-export LS_OPTIONS='--color=auto'
 eval "$(dircolors -b)"
-alias ls='eza $LS_OPTIONS --icons --git'
-alias la='ls -a'
-alias ll='ls -alh'
-alias l='ls'
-alias l.="ls -A | rg -E '^\.'"
-alias listdir="ls -d */ > list"
-
-# copy 
-# Confirm before overwriting something
-alias cp="cp -i"
 
 # remove
 alias trash="rmtrash"

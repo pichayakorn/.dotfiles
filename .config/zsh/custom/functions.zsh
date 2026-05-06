@@ -1,5 +1,71 @@
 export GPG_DIR="$HOME/gpg"
 
+rainbow_bar() {
+    awk 'BEGIN{
+        s="  ";
+        for (colnum = 0; colnum<77; colnum++) {
+            r = 255-(colnum*255/76);
+            g = (colnum*510/76);
+            b = (colnum*255/76);
+            if (g>255) g = 510-g;
+            printf "\033[48;2;%d;%d;%dm%s\033[0m", r,g,b,s;
+        }
+        printf "\n";
+    }'
+}
+
+# Backup file or directory with date and versioning
+backup() {
+  local target="$1"
+  if [[ -z "$target" ]]; then
+    echo "Usage: backup <filename|directory>"
+    return 1
+  fi
+
+  if [[ ! -e "$target" ]]; then
+    echo "Error: $target is not a valid file or directory"
+    return 1
+  fi
+
+  local date=$(date +%Y-%m-%d)
+  local base_backup="${target}.${date}"
+  local final_backup="${base_backup}.bak"
+
+  if [[ -e "$final_backup" ]]; then
+    local version=2
+    while [[ -e "${base_backup}_v${version}.bak" ]]; do
+      ((version++))
+    done
+    final_backup="${base_backup}_v${version}.bak"
+  fi
+
+  if [[ -d "$target" ]]; then
+    cp -r "$target" "$final_backup"
+    echo "Directory $target backed up as $final_backup"
+  else
+    cp "$target" "$final_backup"
+    echo "File $target backed up as $final_backup"
+  fi
+}
+
+m3u8() {
+  if [[ -z "$1" || -z "$2" ]]; then
+    echo "Usage: (ffmpeg)-m3u8 [m3u8 url] [output-name]"
+    return 1
+  fi
+  ffmpeg -protocol_whitelist file,http,https,tcp,tls,crypto -i "${1}" -c copy $2
+}
+
+dlt() {
+  local title="$1"
+  local url="$2"
+  if [[ -z "$title" || -z "$url" ]]; then
+    echo "Usage: dlt \"Title\" \"URL\""
+    return 1
+  fi
+  yt-dlp -o "${title}.%(ext)s" "${url}"
+}
+
 verify() {
     # 1. Check if GPG is installed
     if ! command -v gpg &> /dev/null; then

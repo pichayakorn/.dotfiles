@@ -1,19 +1,5 @@
 alias code="codium"
 
-# list
-# File and Dir colors for ls and other outputs
-export LS_OPTIONS='--color=auto'
-alias ls='eza $LS_OPTIONS --icons --git'
-alias la='ls -a'
-alias ll='ls -alh'
-alias l='ls'
-alias l.="ls -A | rg -E '^\.'"
-alias listdir="ls -d */ > list"
-
-# copy
-# Confirm before overwriting something
-alias cp="cp -i"
-
 # shutdown or reboot
 alias ssn="sudo shutdown -h now"
 alias sr="sudo reboot"

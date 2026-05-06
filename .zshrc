@@ -147,11 +147,6 @@ USE_POWERLINE="true"
 #    is not a diamond
 HAS_WIDECHARS="false"
 
-# Source user-custom-zsh-configuration
-if [[ -e $ZSH_CUSTOM/config.zsh ]]; then
-  source $ZSH_CUSTOM/config.zsh
-fi
-
 # mise
 eval "$(mise activate zsh)"
 
