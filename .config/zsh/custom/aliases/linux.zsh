@@ -4,11 +4,11 @@ alias code="vscodium"
 # File and Dir colors for ls and other outputs
 export LS_OPTIONS='--color=auto'
 eval "$(dircolors -b)"
-alias ls='exa $LS_OPTIONS'
+alias ls='eza $LS_OPTIONS --icons --git'
 alias la='ls -a'
 alias ll='ls -alh'
 alias l='ls'
-alias l.="ls -A | grep -E '^\.'"
+alias l.="ls -A | rg -E '^\.'"
 alias listdir="ls -d */ > list"
 
 # copy 

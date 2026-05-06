@@ -1,14 +1,32 @@
 # Set TERM to alacritty if the system is Linux
-if [[ "$(uname -s)" == "Linux" ]]; then
-  export TERM=alacritty
+# if [[ "$(uname -s)" == "Linux" ]]; then
+#   export TERM=alacritty
+# fi
+#
+# # Preferred editor for local and remote sessions
+# if [[ -n $SSH_CONNECTION ]]; then
+#   export EDITOR="$(which vim)"
+# else
+#   export EDITOR="$(which nvim)"
+# fi
+
+# # 1. Handle TERM dynamically
+# # Instead of forcing 'alacritty', it's safer to check if you are 
+# # actually inside Alacritty before setting it.
+# if [[ "$ALACRITTY_WINDOW_ID" || "$ALACRITTY_LOG" ]]; then
+#   export TERM=alacritty
+# fi
+
+# 2. Preferred editor logic
+# Using 'command -v' is generally faster and more POSIX-compliant than 'which'
+if [[ -n "$SSH_CONNECTION" ]]; then
+  export EDITOR=$(command -v vim)
+else
+  export EDITOR=$(command -v nvim || command -v vim)
 fi
 
-# Preferred editor for local and remote sessions
-if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR="$(which vim)"
-else
-  export EDITOR="$(which nvim)"
-fi
+# 3. Ensure the editor is set even if nvim/vim aren't found
+export EDITOR="${EDITOR:-vi}"
 
 # Invoking GPG-AGENT
 # macOS: pinentry-mac @ $HOME/.gnupg/gpg-agent.conf
@@ -43,8 +61,8 @@ ZSH_THEME="bira-custom"
 
 # Uncomment one of the following lines to change the auto-update behavior
 # zstyle ':omz:update' mode disabled  # disable automatic updates
-# zstyle ':omz:update' mode auto      # update automatically without asking
-zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+zstyle ':omz:update' mode auto      # update automatically without asking
+# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 
 # Uncomment the following line to change how often to auto-update (in days).
 # zstyle ':omz:update' frequency 13
@@ -91,10 +109,6 @@ export ZSH_CUSTOM="$HOME/.config/zsh/custom"
 plugins=(
   # Build-in
   git
-  conda-env
-  z
-  nvm
-  nodenv
   # Custom
   zsh-autosuggestions
   # zsh-syntax-highlighting
@@ -138,25 +152,16 @@ if [[ -e $ZSH_CUSTOM/config.zsh ]]; then
   source $ZSH_CUSTOM/config.zsh
 fi
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$("$HOME/miniconda3/bin/conda" 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-  eval "$__conda_setup"
-else
-  if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
-    . "$HOME/miniconda3/etc/profile.d/conda.sh"
-  else
-    export PATH="$HOME/miniconda3/bin:$PATH"
-  fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
+# mise
+eval "$(mise activate zsh)"
 
 # pnpm
-export PNPM_HOME="$HOME/.local/share/pnpm"
+export PNPM_HOME="/Volumes/MacX/hachi/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
+# zoxide 
+eval "$(zoxide init zsh)"

@@ -13,10 +13,13 @@ alias oldvim="vim"
 # source
 alias so="source"
 
-## Colorize the grep command output for ease of use (good for log files)##
-alias grep='grep --color=auto'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
+# cat -> bat
+alias cat='bat'
+
+# grep -> ripgrep
+alias grep='rg'
+alias egrep='rg'
+alias fgrep='rg'
 
 # Human-readable sizes
 alias df='df -h'
@@ -54,12 +57,12 @@ alias sz="source ~/.zshrc"
 # Python
 alias py="python"
 
-# conda
-alias etconda="conda activate"
-alias exconda="conda deactivate"
-alias lsconda="conda env list"
-alias mkconda="conda create -n"
-alias rmconda="conda env remove -n"
+# mise
+alias m="mise"
+alias mu="mise use"
+alias mi="mise install"
+alias ml="mise ls"
+alias mra="mise run"
 
 # git
 alias g="git"
@@ -76,50 +79,47 @@ alias exity='exit'
 
 # Short command
 alias dl='yt-dlp'
+alias dlfhd='yt-dlp -f "bestvideo[height<=1080]+bestaudio"'
+alias get-title='yt-dlp --get-filename -o "%(title)s"'
 
-# # ex = EXtractor for all kinds of archives
-# # usage: ex <file>
-ex ()
-{
-  if [ -f $1 ] ; then
-    case $1 in
-      *.tar.bz2)   tar xjf $1   ;;
-      *.tar.gz)    tar xzf $1   ;;
-      *.bz2)       bunzip2 $1   ;;
-      *.rar)       unrar x $1   ;;
-      *.gz)        gunzip $1    ;;
-      *.tar)       tar xf $1    ;;
-      *.tbz2)      tar xjf $1   ;;
-      *.tgz)       tar xzf $1   ;;
-      *.zip)       unzip $1     ;;
-      *.Z)         uncompress $1;;
-      *.7z)        7z x $1      ;;
-      *.deb)       ar x $1      ;;
-      *.tar.xz)    tar xf $1    ;;
-      *.tar.zst)   tar xf $1    ;;
-      *)           echo "'$1' cannot be extracted via ex()" ;;
-    esac
-  else
-    echo "'$1' is not a valid file"
-  fi
-}
+# Gemini-cli
+alias ask='gemini -p'
 
-# Backup temp directory of file
-bak() {
-  if [[ -z "$1" ]]; then
-    echo "Usage: bak <filename|directory>"
+# ex = EXtractor for all kinds of archives
+# usage: ex <file>
+alias ex='ouch decompress'
+
+# Backup file or directory with date and versioning
+backup() {
+  local target="$1"
+  if [[ -z "$target" ]]; then
+    echo "Usage: backup <filename|directory>"
     return 1
   fi
 
-  if [[ -d "$1" ]]; then
-    cp -r "$1" "${1}.bak"
-    echo "Directory $1 backed up as ${1}.bak"
-  elif [[ -f "$1" ]]; then
-    cp "$1" "${1}.bak"
-    echo "File $1 backed up as ${1}.bak"
-  else
-    echo "Error: $1 is not a valid file or directory"
+  if [[ ! -e "$target" ]]; then
+    echo "Error: $target is not a valid file or directory"
     return 1
+  fi
+
+  local date=$(date +%Y-%m-%d)
+  local base_backup="${target}.${date}"
+  local final_backup="${base_backup}.bak"
+
+  if [[ -e "$final_backup" ]]; then
+    local version=2
+    while [[ -e "${base_backup}_v${version}.bak" ]]; do
+      ((version++))
+    done
+    final_backup="${base_backup}_v${version}.bak"
+  fi
+
+  if [[ -d "$target" ]]; then
+    cp -r "$target" "$final_backup"
+    echo "Directory $target backed up as $final_backup"
+  else
+    cp "$target" "$final_backup"
+    echo "File $target backed up as $final_backup"
   fi
 }
 
@@ -135,7 +135,7 @@ dlt() {
   local title="$1"
   local url="$2"
   if [[ -z "$title" || -z "$url" ]]; then
-    echo "Usage: ytcustom \"Title\" \"URL\""
+    echo "Usage: dlt \"Title\" \"URL\""
     return 1
   fi
   yt-dlp -o "${title}.%(ext)s" "${url}"

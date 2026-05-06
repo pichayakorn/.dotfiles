@@ -1,0 +1,9 @@
+--ignore=SETUP\.md
+--ignore=README\.md
+--ignore=\.bak$
+--ignore=\.log$
+--ignore=\.DS_Store
+--ignore=\.stowrc
+--ignore=\.stow-global-ignore
+--ignore=\.gitignore$
+--ignore=\.git$
