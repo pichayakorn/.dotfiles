@@ -1,13 +1,27 @@
+# Mise prompt info
+function mise_node_prompt_info() {
+  local node_version=${MISE_NODE_VERSION:-$(mise current node 2>/dev/null)}
+  if [[ -n "$node_version" && "$node_version" != "system" ]]; then
+    echo "%{$fg[green]%}node:%{$fg[cyan]%}${node_version}%{$reset_color%} "
+  fi
+}
+
+function mise_python_prompt_info() {
+  local python_version=${MISE_PYTHON_VERSION:-$(mise current python 2>/dev/null)}
+  if [[ -n "$python_version" && "$python_version" != "system" ]]; then
+    echo "%{$fg[green]%}py:%{$fg[yellow]%}${python_version}%{$reset_color%} "
+  fi
+}
+
 local return_code="%(?..%{$fg[red]%}%? ↵%{$reset_color%})"
 local user_host="%B%(!.%{$fg[red]%}.%{$fg[green]%})%n@%m%{$reset_color%} "
 local user_symbol='%(!.#.$)'
 local current_dir="%B%{$fg[blue]%}%~ %{$reset_color%}"
-local conda_prompt='$(conda_prompt_info)'
-local node_prompt='$(node_prompt_info)'
+local mise_prompt='$(mise_node_prompt_info)$(mise_python_prompt_info)'
 
-local vcs_branch='$(git_prompt_info)$(hg_prompt_info)'
-local rvm_ruby='$(ruby_prompt_info)'
-local venv_prompt='$(virtualenv_prompt_info)'
+local vcs_branch='$(git_prompt_info)'
+local rvm_ruby='' # $(ruby_prompt_info)
+local venv_prompt='' # $(virtualenv_prompt_info)
 if [[ "${plugins[@]}" =~ 'kube-ps1' ]]; then
     local kube_prompt='$(kube_ps1)'
 else
@@ -16,7 +30,7 @@ fi
 
 ZSH_THEME_RVM_PROMPT_OPTIONS="i v g"
 
-PROMPT="╭─${user_host}${current_dir}${vcs_branch}${rvm_ruby}${venv_prompt}${kube_prompt}${conda_prompt}${node_prompt}
+PROMPT="╭─${user_host}${current_dir}${vcs_branch}${mise_prompt}${kube_prompt}
 ╰─%B${user_symbol}%b "
 RPROMPT="%B${return_code}%b"
 
