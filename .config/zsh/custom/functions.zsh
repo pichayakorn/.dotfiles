@@ -1,4 +1,4 @@
-export GPG_DIR='/Volumes/MacX/hachi/gpg'
+export GPG_DIR="$HOME/gpg"
 
 verify() {
     # 1. Check if GPG is installed
