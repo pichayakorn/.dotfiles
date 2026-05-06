@@ -2,6 +2,7 @@
   excludesfile = ~/.gitignore_global
   editor = nvim
   ignorecase = false
+  pager = delta
 [push]
   default = simple
 [color]
@@ -65,3 +66,9 @@
   gpgsign = true
 [init]
   defaultBranch = main
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true
+  side-by-side = true
+  line-numbers = true
