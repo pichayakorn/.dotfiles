@@ -2,7 +2,7 @@
 if [[ "$(uname -s)" == "Darwin" ]]; then
   source $ZSH_CUSTOM/aliases/macos.zsh
 elif [[ "$(uname -s)" == "Linux" ]]; then
-    source $ZSH_CUSTOM/aliases/linux.zsh
+  source $ZSH_CUSTOM/aliases/linux.zsh
 fi
 
 alias v="nvim"
