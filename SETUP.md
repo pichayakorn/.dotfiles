@@ -45,13 +45,13 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 The following tools are used throughout the configuration:
 
 - **Editors**: `nvim` (Neovim)
-- **CLI Utilities**: `bat`, `ripgrep` (`rg`), `peco`, `zoxide`, `ouch`, `fastfetch`, `btop`, `yt-dlp`, `ffmpeg`, `commitizen`, `mise`
+- **CLI Utilities**: `bat`, `ripgrep` (`rg`), `peco`, `zoxide`, `ouch`, `fastfetch`, `btop`, `yt-dlp`, `ffmpeg`, `commitizen`, `mise`, `uv`
 - **Git Enhancements**: `ghq`, `hub`, `git-lfs`
-- **Language Management**: `mise` (replaces nvm, nodenv, conda)
+- **Language Management**: `mise` (replaces nvm, nodenv, conda), `uv` (fast Python package manager)
 
 ### Recommended Installation (macOS)
 ```bash
-brew install neovim bat ripgrep peco zoxide ouch fastfetch btop yt-dlp ffmpeg ghq hub git-lfs commitizen mise
+brew install neovim bat ripgrep peco zoxide ouch fastfetch btop yt-dlp ffmpeg ghq hub git-lfs commitizen mise uv
 ```
 
 ## 5. Apply Dotfiles (Symlinking)

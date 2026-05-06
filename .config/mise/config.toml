@@ -1,10 +1,12 @@
 [tools]
 node = "lts"
 python = "latest"
+uv = "latest"
 
 [settings]
 # Automatically create virtualenv when a python version is specified in .mise.toml
-python_venv_auto_create = true
+# This requires 'uv' to be installed (recommended for speed)
+python.uv_venv_auto = "create|source"
 # Shorthands for easy installs
 # node = "lts"
 # python = "3.12"
