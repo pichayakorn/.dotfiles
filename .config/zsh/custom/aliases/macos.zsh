@@ -19,7 +19,7 @@ alias ssn="sudo shutdown -h now"
 alias sr="sudo reboot"
 
 # Finder
-alias fd="open ."
+alias of="open ."
 
 # brew udpate
 alias upgrade='brew upgrade'
