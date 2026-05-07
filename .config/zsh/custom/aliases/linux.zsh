@@ -81,11 +81,3 @@ alias kernels="ls /usr/lib/modules"
 # shutdown or reboot
 alias ssn="sudo shutdown now"
 alias sr="reboot"
-
-# Zerotier-one
-alias ztstart="sudo systemctl start zerotier-one"
-alias ztstop="sudo systemctl stop zerotier-one"
-alias ztstatus="sudo systemctl status zerotier-one"
-alias zt="sudo zerotier-cli"
-alias zti="zt info"
-alias ztl="zt listnetworks"

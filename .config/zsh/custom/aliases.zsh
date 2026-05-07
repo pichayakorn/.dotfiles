@@ -95,9 +95,6 @@ alias dl='yt-dlp'
 alias dlfhd='yt-dlp -f "bestvideo[height<=1080]+bestaudio"'
 alias get-title='yt-dlp --get-filename -o "%(title)s"'
 
-# Gemini-cli
-alias ask='gemini -p'
-
 # ex = EXtractor for all kinds of archives
 # usage: ex <file>
 alias ex='ouch decompress'

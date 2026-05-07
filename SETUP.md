@@ -16,7 +16,12 @@ Ensure you have the following installed on your system:
 brew install zsh git stow curl wget
 ```
 
-### Linux (Ubuntu/Debian)
+### Arch Linux
+```bash
+sudo pacman -Syu zsh git stow curl wget
+```
+
+### Ubuntu/Debian
 ```bash
 sudo apt update && sudo apt install zsh git stow curl wget
 ```
@@ -42,16 +47,39 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 
 ## 4. Install Necessary Tools
 
-The following tools are used throughout the configuration:
+The following tools are used throughout the configuration. Choose the installation method for your OS.
 
-- **Editors**: `nvim` (Neovim)
-- **CLI Utilities**: `bat`, `ripgrep` (`rg`), `fzf`, `fd`, `zoxide`, `ouch`, `fastfetch`, `btop`, `yt-dlp`, `ffmpeg`, `commitizen`, `mise`, `uv`
-- **Git Enhancements**: `ghq`, `hub`, `git-lfs`
-- **Language Management**: `mise` (replaces nvm, nodenv, conda), `uv` (fast Python package manager)
-
-### Recommended Installation (macOS)
+### macOS (Homebrew)
 ```bash
-brew install neovim bat ripgrep fzf fd zoxide ouch fastfetch btop yt-dlp ffmpeg ghq hub git-lfs commitizen mise uv
+# CLI Utilities
+brew install neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit tmux ghq hub git-lfs mise uv rmtrash pnpm
+
+# GUI Applications
+brew install --cask alacritty zed vscodium
+```
+
+### Arch Linux (Pacman & AUR)
+```bash
+# Core & CLI Tools
+sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit tmux ghq hub git-lfs mise uv alacritty zed pnpm
+
+# AUR Packages (using yay or paru)
+yay -S vscodium-bin rmtrash pokeget-rs
+```
+
+### Ubuntu/Debian
+```bash
+# Standard Repositories
+sudo apt install neovim bat ripgrep fzf fd-find zoxide btop ffmpeg tmux git-lfs rmtrash
+
+# Mise (Environment Manager)
+curl https://mise.jdx.dev/install.sh | sh
+
+# Uv (Python Manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Eza, Lazygit, Fastfetch, Ouch (Recommended via Pre-built Binaries or Official Repos)
+# Please refer to their respective documentation for the latest installation methods on Debian-based systems.
 ```
 
 ## 5. Apply Dotfiles (Symlinking)
@@ -81,8 +109,6 @@ Mise handles your language versions (Node, Python, etc.). After symlinking your 
 mise install
 ```
 
-This will install the latest Python and the LTS version of Node.js as configured.
-
 ## 8. Final Steps
 
 - **Neovim**: Run `nvim` to let the plugin manager (Lazy.nvim) install all plugins.
@@ -97,3 +123,4 @@ Reload your shell:
 ```bash
 source ~/.zshrc
 ```
+
