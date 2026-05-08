@@ -44,7 +44,7 @@ Ensure you have the following installed on your system:
 brew install zsh git stow curl wget
 ```
 
-#### Arch Linux
+#### Arch Linux / Manjaro / Omarchy
 ```bash
 sudo pacman -Syu zsh git stow curl wget
 ```
@@ -86,12 +86,13 @@ brew install neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffm
 brew install --cask alacritty zed vscodium
 ```
 
-#### Arch Linux (Pacman & AUR)
+#### Arch Linux / Manjaro / Omarchy (Pacman & AUR)
 ```bash
 # Core & CLI Tools
 sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit tmux ghq hub git-lfs mise uv alacritty zed pnpm
 
 # AUR Packages (using yay or paru)
+# On Manjaro/Omarchy, you can also use their respective package managers to install these.
 yay -S vscodium-bin pokeget-rs
 ```
 

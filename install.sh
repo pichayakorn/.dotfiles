@@ -20,7 +20,16 @@ success() { echo -e "${SET_COLOR_GREEN}[SUCCESS]${SET_COLOR_RESET} $1"; }
 OS="$(uname -s)"
 case "$OS" in
     Linux*)
-        if [ -f /etc/arch-release ]; then
+        if [ -f /etc/os-release ]; then
+            . /etc/os-release
+            if [[ "$ID" == "arch" || "${ID_LIKE:-}" == *"arch"* || "$ID" == "manjaro" || "$ID" == "omarchy" ]]; then
+                DISTRO="Arch"
+            elif [[ "$ID" == "debian" || "${ID_LIKE:-}" == *"debian"* || "$ID" == "ubuntu" || "${ID_LIKE:-}" == *"ubuntu"* ]]; then
+                DISTRO="Debian"
+            else
+                DISTRO="Linux"
+            fi
+        elif [ -f /etc/arch-release ]; then
             DISTRO="Arch"
         elif [ -f /etc/debian_version ]; then
             DISTRO="Debian"
@@ -42,6 +51,15 @@ info "Detected OS: $OS ($DISTRO)"
 # This allows running the script via curl | bash
 DOTFILES_DIR="$HOME/.dotfiles"
 if [ ! -d "$DOTFILES_DIR" ]; then
+    # Ensure git is installed for cloning
+    if ! command -v git &> /dev/null; then
+        info "Git not found. Installing git prerequisites..."
+        if [[ "$DISTRO" == "Arch" ]]; then
+            sudo pacman -Syu --noconfirm git
+        elif [[ "$DISTRO" == "Debian" ]]; then
+            sudo apt update && sudo apt install -y git
+        fi
+    fi
     info "Cloning dotfiles to $DOTFILES_DIR..."
     git clone https://github.com/pichayakorn/.dotfiles.git "$DOTFILES_DIR"
 fi
