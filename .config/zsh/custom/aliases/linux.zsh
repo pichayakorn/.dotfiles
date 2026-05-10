@@ -1,4 +1,5 @@
 alias code="vscodium"
+alias zed="zeditor"
 
 # list
 eval "$(dircolors -b)"
