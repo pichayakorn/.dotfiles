@@ -116,13 +116,13 @@ fi
 # 3. Install Tools
 info "Installing tools for $DISTRO..."
 if [[ "$DISTRO" == "macOS" ]]; then
-    brew install neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit tmux ghq hub git-lfs mise uv pnpm
+    brew install neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv pnpm
     brew install --cask alacritty zed vscodium
     # Font
     brew tap homebrew/cask-fonts || true
     brew install --cask font-iosevka-nerd-font || true
 elif [[ "$DISTRO" == "Arch" ]]; then
-    sudo pacman -S --noconfirm neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit tmux ghq hub git-lfs mise uv alacritty zed pnpm
+    sudo pacman -S --noconfirm neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv alacritty zed pnpm
     # Check for AUR helper
     if command -v yay &> /dev/null; then
         yay -S --noconfirm vscodium-bin pokeget-rs
@@ -139,7 +139,7 @@ elif [[ "$DISTRO" == "Debian" ]]; then
     
     # Extra packages available in newer Ubuntu (24.04+ / Noble / Resolute)
     info "Installing extra tools (Ubuntu 24.04+)..."
-    sudo apt install -y eza lazygit fastfetch yt-dlp hub alacritty || warn "Extra tools could not be installed via apt. They might not be available in your repository version."
+    sudo apt install -y eza lazygit git-delta fastfetch yt-dlp hub alacritty || warn "Extra tools could not be installed via apt. They might not be available in your repository version."
     
     # Install Zed editor via official script
     if ! command -v zed &> /dev/null; then

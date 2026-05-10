@@ -80,7 +80,7 @@ The following tools are used throughout the configuration. Choose the installati
 #### macOS (Homebrew)
 ```bash
 # CLI Utilities
-brew install neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit tmux ghq hub git-lfs mise uv pnpm
+brew install neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv pnpm
 
 # GUI Applications
 brew install --cask alacritty zed vscodium
@@ -89,7 +89,7 @@ brew install --cask alacritty zed vscodium
 #### Arch Linux / Manjaro / Omarchy (Pacman & AUR)
 ```bash
 # Core & CLI Tools
-sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit tmux ghq hub git-lfs mise uv alacritty zed pnpm
+sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv alacritty zed pnpm
 
 # AUR Packages (using yay or paru)
 # On Manjaro/Omarchy, you can also use their respective package managers to install these.
@@ -99,7 +99,7 @@ yay -S vscodium-bin pokeget-rs
 #### Ubuntu/Debian
 ```bash
 # Standard Repositories (Ubuntu 24.04+)
-sudo apt install -y neovim bat ripgrep fzf fd-find zoxide btop ffmpeg tmux git-lfs eza lazygit fastfetch yt-dlp hub alacritty
+sudo apt install -y neovim bat ripgrep fzf fd-find zoxide btop ffmpeg tmux git-lfs eza lazygit git-delta fastfetch yt-dlp hub alacritty
 
 # Zed Editor
 curl -f https://zed.dev/install.sh | sh
