@@ -91,9 +91,11 @@ brew install --cask alacritty zed vscodium
 # Core & CLI Tools
 sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv alacritty zed pnpm
 
-# AUR Packages (using yay or paru)
-# On Manjaro/Omarchy, you can also use their respective package managers to install these.
+# AUR Packages (using yay, paru, or pamac)
+# On Manjaro/Omarchy, you can use pamac or your preferred AUR helper.
 yay -S vscodium-bin pokeget-rs
+# or
+pamac install vscodium-bin pokeget-rs
 ```
 
 #### Ubuntu/Debian

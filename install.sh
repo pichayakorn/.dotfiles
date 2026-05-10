@@ -123,13 +123,15 @@ if [[ "$DISTRO" == "macOS" ]]; then
     brew install --cask font-iosevka-nerd-font || true
 elif [[ "$DISTRO" == "Arch" ]]; then
     sudo pacman -S --noconfirm neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv alacritty zed pnpm
-    # Check for AUR helper
+    # Check for AUR helper (yay, paru, or pamac)
     if command -v yay &> /dev/null; then
         yay -S --noconfirm vscodium-bin pokeget-rs
     elif command -v paru &> /dev/null; then
         paru -S --noconfirm vscodium-bin pokeget-rs
+    elif command -v pamac &> /dev/null; then
+        pamac install --no-confirm vscodium-bin pokeget-rs
     else
-        warn "AUR helper (yay/paru) not found. Skipping vscodium-bin and pokeget-rs."
+        warn "AUR helper (yay/paru/pamac) not found. Skipping vscodium-bin and pokeget-rs."
     fi
 elif [[ "$DISTRO" == "Debian" ]]; then
     # Install available packages via apt
