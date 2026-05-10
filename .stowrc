@@ -1,5 +1,7 @@
+--ignore=install\.sh
 --ignore=SETUP\.md
 --ignore=README\.md
+--ignore=LICENSE
 --ignore=\.bak$
 --ignore=\.log$
 --ignore=\.DS_Store
