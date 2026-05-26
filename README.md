@@ -1,6 +1,6 @@
 # 🌌 .dotfiles
 
-A collection of configuration files for macOS and Linux (Arch/Debian), optimized for productivity, aesthetics, and a modern development workflow.
+A collection of configuration files for macOS and Linux (Arch/EndeavourOS), optimized for productivity, aesthetics, and a modern development workflow.
 
 ## ✨ Features
 
@@ -18,7 +18,7 @@ A collection of configuration files for macOS and Linux (Arch/Debian), optimized
   - [eza](https://github.com/eza-community/eza): A modern replacement for `ls`.
   - [zoxide](https://github.com/ajeetdsouza/zoxide): A smarter `cd` command.
 - **System**:
-  - Multi-OS support (macOS, Arch Linux, Debian/Ubuntu).
+  - Multi-OS support (macOS, Arch Linux).
   - Automated installation script.
   - Managed by [GNU Stow](https://www.gnu.org/software/stow/) for clean symlinking.
 

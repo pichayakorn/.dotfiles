@@ -22,7 +22,7 @@ cd ~/.dotfiles
 ./install.sh
 ```
 
-The script will handle package manager updates, tool installations via Brew/Pacman/Apt, symlinking with GNU Stow, and ZSH plugin setup.
+The script will handle package manager updates, tool installations via Brew/Pacman, symlinking with GNU Stow, and ZSH plugin setup.
 
 ---
 
@@ -44,14 +44,9 @@ Ensure you have the following installed on your system:
 brew install zsh git stow curl wget
 ```
 
-#### Arch Linux / Manjaro / Omarchy
+#### Arch Linux / Manjaro / Omarchy / EndeavourOS
 ```bash
 sudo pacman -Syu zsh git stow curl wget
-```
-
-#### Ubuntu/Debian
-```bash
-sudo apt update && sudo apt install -y zsh git stow curl wget
 ```
 
 ### 2. Clone the Dotfiles
@@ -82,43 +77,20 @@ The following tools are used throughout the configuration. Choose the installati
 # CLI Utilities
 brew install neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv pnpm
 
-# GUI Applications
-brew install --cask alacritty zed vscodium
+# GUI Applications & Fonts
+brew install --cask alacritty zed vscodium discord font-iosevka-term-nerd-font
 ```
 
-#### Arch Linux / Manjaro / Omarchy (Pacman & AUR)
+#### Arch Linux / Manjaro / Omarchy / EndeavourOS (Pacman & AUR)
 ```bash
 # Core & CLI Tools
-sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv alacritty zed pnpm
+sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv alacritty zed pnpm ttf-iosevkaterm-nerd discord
 
 # AUR Packages (using yay, paru, or pamac)
-# On Manjaro/Omarchy, you can use pamac or your preferred AUR helper.
+# On Manjaro/Omarchy/EndeavourOS, you can use your preferred AUR helper.
 yay -S vscodium-bin pokeget-rs
 # or
 pamac install vscodium-bin pokeget-rs
-```
-
-#### Ubuntu/Debian
-```bash
-# Standard Repositories (Ubuntu 24.04+)
-sudo apt install -y neovim bat ripgrep fzf fd-find zoxide btop ffmpeg tmux git-lfs eza lazygit git-delta fastfetch yt-dlp hub alacritty
-
-# Zed Editor
-curl -f https://zed.dev/install.sh | sh
-
-# Mise (Environment Manager)
-curl https://mise.jdx.dev/install.sh | sh
-
-# Uv (Python Manager)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Pnpm (Node.js Package Manager)
-curl -fsSL https://get.pnpm.io/install.sh | sh -
-
-# VSCodium
-wget -qO - https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg | gpg --dearmor | sudo dd of=/usr/share/keyrings/vscodium-archive-keyring.gpg
-echo 'deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg ] https://download.vscodium.com/debs vscodium main' | sudo tee /etc/apt/sources.list.d/vscodium.list
-sudo apt update && sudo apt install -y codium
 ```
 
 ### 5. Apply Dotfiles (Symlinking)
@@ -152,7 +124,7 @@ mise install
 
 - **Neovim**: Run `nvim` to let the plugin manager (Lazy.nvim) install all plugins.
 - **GPG**: If you use GPG for signing commits, import your keys and ensure `gpg` is configured.
-- **Fonts**: This setup is optimized for **IosevkaTerm Nerd Font** (used in Alacritty). You can find it at [Nerd Fonts](https://www.nerdfonts.com/font-downloads).
+- **Fonts**: This setup is optimized for **IosevkaTerm Nerd Font** (package: `ttf-iosevkaterm-nerd` or `font-iosevka-term-nerd-font`). You can find it at [Nerd Fonts](https://www.nerdfonts.com/font-downloads).
 - **Commitizen**: Ensure `cz-conventional-changelog` is installed globally if you use `git cz`.
   ```bash
   npm install -g commitizen cz-conventional-changelog

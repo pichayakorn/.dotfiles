@@ -22,17 +22,13 @@ case "$OS" in
     Linux*)
         if [ -f /etc/os-release ]; then
             . /etc/os-release
-            if [[ "$ID" == "arch" || "${ID_LIKE:-}" == *"arch"* || "$ID" == "manjaro" || "$ID" == "omarchy" ]]; then
+            if [[ "$ID" == "arch" || "${ID_LIKE:-}" == *"arch"* || "$ID" == "manjaro" || "$ID" == "omarchy" || "$ID" == "endeavouros" ]]; then
                 DISTRO="Arch"
-            elif [[ "$ID" == "debian" || "${ID_LIKE:-}" == *"debian"* || "$ID" == "ubuntu" || "${ID_LIKE:-}" == *"ubuntu"* ]]; then
-                DISTRO="Debian"
             else
                 DISTRO="Linux"
             fi
         elif [ -f /etc/arch-release ]; then
             DISTRO="Arch"
-        elif [ -f /etc/debian_version ]; then
-            DISTRO="Debian"
         else
             DISTRO="Linux"
         fi
@@ -56,8 +52,6 @@ if [ ! -d "$DOTFILES_DIR" ]; then
         info "Git not found. Installing git prerequisites..."
         if [[ "$DISTRO" == "Arch" ]]; then
             sudo pacman -Syu --noconfirm git
-        elif [[ "$DISTRO" == "Debian" ]]; then
-            sudo apt update && sudo apt install -y git
         fi
     fi
     info "Cloning dotfiles to $DOTFILES_DIR..."
@@ -100,9 +94,6 @@ if [[ "$DISTRO" == "macOS" ]]; then
 elif [[ "$DISTRO" == "Arch" ]]; then
     info "Updating Pacman and installing prerequisites..."
     sudo pacman -Syu --noconfirm zsh git stow curl wget
-elif [[ "$DISTRO" == "Debian" ]]; then
-    info "Updating Apt and installing prerequisites..."
-    sudo apt update && sudo apt install -y zsh git stow curl wget ca-certificates gnupg
 fi
 
 # 2. Oh My Zsh
@@ -117,12 +108,12 @@ fi
 info "Installing tools for $DISTRO..."
 if [[ "$DISTRO" == "macOS" ]]; then
     brew install neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv pnpm
-    brew install --cask alacritty zed vscodium
+    brew install --cask alacritty zed vscodium discord
     # Font
     brew tap homebrew/cask-fonts || true
     brew install --cask font-iosevka-nerd-font || true
 elif [[ "$DISTRO" == "Arch" ]]; then
-    sudo pacman -S --noconfirm neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv alacritty zed pnpm
+    sudo pacman -S --noconfirm neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv alacritty zed pnpm ttf-iosevkaterm-nerd discord
     # Check for AUR helper (yay, paru, or pamac)
     if command -v yay &> /dev/null; then
         yay -S --noconfirm vscodium-bin pokeget-rs
@@ -132,67 +123,6 @@ elif [[ "$DISTRO" == "Arch" ]]; then
         pamac install --no-confirm vscodium-bin pokeget-rs
     else
         warn "AUR helper (yay/paru/pamac) not found. Skipping vscodium-bin and pokeget-rs."
-    fi
-elif [[ "$DISTRO" == "Debian" ]]; then
-    # Install available packages via apt
-    info "Installing tools via apt..."
-    # Core packages
-    sudo apt install -y neovim bat ripgrep fzf fd-find zoxide btop ffmpeg tmux git-lfs || warn "Some core packages could not be installed."
-    
-    # Extra packages available in newer Ubuntu (24.04+ / Noble / Resolute)
-    info "Installing extra tools (Ubuntu 24.04+)..."
-    sudo apt install -y eza lazygit git-delta fastfetch yt-dlp hub alacritty || warn "Extra tools could not be installed via apt. They might not be available in your repository version."
-    
-    # Install Zed editor via official script
-    if ! command -v zed &> /dev/null; then
-        info "Installing Zed editor..."
-        curl -f https://zed.dev/install.sh | sh
-    fi
-
-    # Install Mise
-    if ! command -v mise &> /dev/null; then
-        info "Installing Mise..."
-        curl https://mise.jdx.dev/install.sh | sh
-    fi
-
-    # Install Uv
-    if ! command -v uv &> /dev/null; then
-        info "Installing Uv..."
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-    fi
-
-    # Install Pnpm
-    if ! command -v pnpm &> /dev/null; then
-        info "Installing Pnpm..."
-        curl -fsSL https://get.pnpm.io/install.sh | sh -
-    fi
-
-    # Install Ouch (via cargo if available)
-    if ! command -v ouch &> /dev/null; then
-        if command -v cargo &> /dev/null; then
-            info "Installing Ouch via cargo..."
-            cargo install ouch
-        else
-            warn "Ouch not found and cargo not available. Skipping Ouch installation."
-        fi
-    fi
-
-    # Install GHQ (via go if available)
-    if ! command -v ghq &> /dev/null; then
-        if command -v go &> /dev/null; then
-            info "Installing GHQ via go..."
-            go install github.com/x-motemen/ghq@latest
-        else
-            warn "GHQ not found and go not available. Skipping GHQ installation."
-        fi
-    fi
-
-    # Install VSCodium
-    if ! command -v codium &> /dev/null; then
-        info "Installing VSCodium..."
-        wget -qO - https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg | gpg --dearmor | sudo dd of=/usr/share/keyrings/vscodium-archive-keyring.gpg
-        echo 'deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg ] https://download.vscodium.com/debs vscodium main' | sudo tee /etc/apt/sources.list.d/vscodium.list
-        sudo apt update && sudo apt install -y codium || warn "Failed to install VSCodium via custom repository."
     fi
 fi
 
@@ -237,10 +167,6 @@ fi
 # 7. Mise Install
 if command -v mise &> /dev/null; then
     info "Running mise install..."
-    # Ensure mise is in path for the current session
-    if [[ "$DISTRO" == "Debian" ]]; then
-        export PATH="$HOME/.local/bin:$PATH"
-    fi
     mise install -y
 fi
 
@@ -249,7 +175,7 @@ echo ""
 success "Setup complete!"
 info "Please perform the following manual steps:"
 echo "1. Open Neovim (run 'nvim') to let Lazy.nvim install plugins."
-echo "2. Ensure your terminal is using 'IosevkaTerm Nerd Font'."
+echo "2. Ensure your terminal is using 'IosevkaTerm Nerd Font' (ttf-iosevkaterm-nerd)."
 echo ""
 warn "Note: If you encounter 'stow' conflicts, you may need to manually remove or move conflicting files in your home directory."
 
