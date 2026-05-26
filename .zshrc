@@ -160,3 +160,7 @@ esac
 
 # zoxide 
 eval "$(zoxide init zsh)"
+
+
+# Added by Antigravity CLI installer
+export PATH="/Volumes/MacX/hachi/.local/bin:$PATH"
