@@ -92,7 +92,7 @@ alias exity='exit'
 
 # Short command
 alias dl='yt-dlp'
-alias dlfhd='yt-dlp -f "bestvideo[height<=1080]+bestaudio"'
+alias dlfhd='yt-dlp -f "bestvideo[height<=1080]+bestaudio" --merge-output-format mp4 --output "%(title)s.%(ext)s"'
 alias get-title='yt-dlp --get-filename -o "%(title)s"'
 
 # ex = EXtractor for all kinds of archives
