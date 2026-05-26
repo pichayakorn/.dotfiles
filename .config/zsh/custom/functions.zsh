@@ -116,7 +116,7 @@ verify() {
         # Attempt to fetch the key from public keyservers
         echo "Fetching Key: $key_id..."
         gpg --keyserver hkps://keys.openpgp.org --recv-keys "$key_id" >/dev/null 2>&1 || \
-        gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys "$key_id" >/dev/null 2>&1
+        gpg --keyserver hkps://pgp.mit.edu --recv-keys "$key_id" >/dev/null 2>&1
 
         # Retrieve the owner's name for display
         local key_owner=$(gpg --list-keys "$key_id" 2>/dev/null | grep "uid" | sed 's/uid *\[.*\] *//' | head -n 1)
