@@ -164,3 +164,10 @@ eval "$(zoxide init zsh)"
 
 # Added by Antigravity CLI installer
 export PATH="/Volumes/MacX/hachi/.local/bin:$PATH"
+
+# bun completions
+[ -s "/Volumes/MacX/hachi/.bun/_bun" ] && source "/Volumes/MacX/hachi/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
