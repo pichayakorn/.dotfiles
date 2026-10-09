@@ -93,7 +93,10 @@ alias exity='exit'
 # Short command
 alias dl='yt-dlp'
 alias dlfhd='yt-dlp -f "bestvideo[height<=1080]+bestaudio" --merge-output-format mp4 --output "%(title)s.%(ext)s"'
+alias dls='$ZSH_CUSTOM/scripts/yt-split.sh'
 alias get-title='yt-dlp --get-filename -o "%(title)s"'
+alias dlmp3='yt-dlp -x --audio-format mp3 --audio-quality 0 -o "%(title)s.%(ext)s"'
+alias dlmusic='$ZSH_CUSTOM/scripts/dlmusic.sh'
 
 # ex = EXtractor for all kinds of archives
 # usage: ex <file>
