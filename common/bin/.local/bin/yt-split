@@ -1,0 +1,223 @@
+#!/bin/zsh
+
+# Function to format seconds to HH:MM:SS
+format_time() {
+    local T=$1
+    local H=$((T/3600))
+    local M=$(( (T%3600)/60 ))
+    local S=$((T%60))
+    printf "%02d:%02d:%02d" $H $M $S
+}
+
+# Function to format seconds to a human readable string (e.g. 5m, 1.5h)
+human_time() {
+    local T=$1
+    if (( T < 60 )); then
+        echo "${T}s"
+    elif (( T < 3600 )); then
+        local M=$(( T / 60.0 ))
+        if [[ $T -eq $(( (T/60)*60 )) ]]; then
+            echo "$(( T / 60 ))m"
+        else
+            printf "%.1fm\n" $M
+        fi
+    else
+        local H=$(( T / 3600.0 ))
+        if [[ $T -eq $(( (T/3600)*3600 )) ]]; then
+            echo "$(( T / 3600 ))h"
+        else
+            printf "%.1fh\n" $H
+        fi
+    fi
+}
+
+URL="$1"
+if [[ -z "$URL" ]]; then
+    echo "Usage: yt-split <URL>"
+    exit 1
+fi
+
+# Check dependencies (fzf is optional: falls back to a numbered menu)
+if ! command -v yt-dlp >/dev/null 2>&1; then
+    echo "Error: yt-dlp is not installed or not in PATH." >&2
+    exit 1
+fi
+
+if ! command -v ffmpeg >/dev/null 2>&1; then
+    echo "Error: ffmpeg is not installed or not in PATH." >&2
+    exit 1
+fi
+
+echo "Fetching video info..."
+# One request for both fields (line 1: duration, line 2: title)
+INFO=("${(@f)$(yt-dlp --print "%(duration)s" --print "%(title)s" --no-warnings "$URL")}")
+DURATION=${INFO[1]}
+TITLE=${INFO[2]}
+
+if [[ -z "$DURATION" || "$DURATION" == "NA" ]]; then
+    echo "Error: Could not retrieve video duration."
+    exit 1
+fi
+
+TOTAL_SEC=$((DURATION))
+echo "Video: $TITLE"
+echo "Total Duration: $(format_time $TOTAL_SEC)"
+echo
+
+# --- Smart Helper to calculate parts with Tail Merging ---
+# If remainder < 10% of interval, merge it into the last part.
+get_parts_smart() {
+    local INTERVAL=$1
+    local P=$(( TOTAL_SEC / INTERVAL ))
+    local R=$(( TOTAL_SEC % INTERVAL ))
+    
+    # If remainder is zero, we have exact parts
+    if (( R == 0 )); then
+        echo $P
+    # If remainder is less than 10% of interval, merge it
+    elif (( R < (INTERVAL / 10) )); then
+        if (( P == 0 )); then echo 1; else echo $P; fi
+    # Otherwise, it needs its own part
+    else
+        echo $(( P + 1 ))
+    fi
+}
+
+# --- Smart Suggestion Logic ---
+smart_options=()
+if (( TOTAL_SEC < 600 )); then
+    T2=$(( (TOTAL_SEC+1)/2 ))
+    smart_options+=("Split into 2 parts ($(human_time $T2) each) | $T2")
+elif (( TOTAL_SEC <= 3600 )); then
+    T2=$(( (TOTAL_SEC+1)/2 ))
+    T3=$(( (TOTAL_SEC+2)/3 ))
+    smart_options+=("Split into 2 parts ($(human_time $T2) each) | $T2")
+    smart_options+=("Split into 3 parts ($(human_time $T3) each) | $T3")
+    P10=$(get_parts_smart 600)
+    smart_options+=("Every 10 minutes ($P10 parts) | 600")
+elif (( TOTAL_SEC <= 36000 )); then
+    T3=$(( (TOTAL_SEC+2)/3 ))
+    smart_options+=("Split into 3 parts ($(human_time $T3) each) | $T3")
+    P30=$(get_parts_smart 1800)
+    smart_options+=("Every 30 minutes ($P30 parts) | 1800")
+    P60=$(get_parts_smart 3600)
+    smart_options+=("Every 1 hour ($P60 parts) | 3600")
+else
+    T10=$(( (TOTAL_SEC+9)/10 ))
+    smart_options+=("Split into 10 parts ($(human_time $T10) each) | $T10")
+    P60=$(get_parts_smart 3600)
+    smart_options+=("Every 1 hour ($P60 parts) | 3600")
+    P120=$(get_parts_smart 7200)
+    smart_options+=("Every 2 hours ($P120 parts) | 7200")
+fi
+smart_options+=("Advanced Split Options... | advanced")
+
+# --- Selection Level 1 ---
+if command -v fzf >/dev/null 2>&1; then
+    CHOICE=$(printf "%s\n" "${smart_options[@]}" | fzf --prompt="Recommended Splits: " --height=~10 --reverse)
+else
+    echo "Recommended Splits:"
+    for (( i=1; i<=${#smart_options[@]}; i++ )); do echo "[$i] ${smart_options[$i]%%|*}"; done
+    echo -n "Choice [1-${#smart_options[@]}]: "; read opt_idx; CHOICE=${smart_options[$opt_idx]}
+fi
+
+if [[ -z "$CHOICE" ]]; then exit 0; fi
+VALUE=$(echo "$CHOICE" | cut -d'|' -f2 | xargs)
+
+# --- Selection Level 2: Advanced ---
+if [[ "$VALUE" == "advanced" ]]; then
+    split_options=()
+    parts=(2 3 4 5 6 10 20)
+    for p in $parts; do
+        TI=$(( (TOTAL_SEC + p - 1) / p ))
+        split_options+=("$p Parts ($(human_time $TI) each) | $TI")
+    done
+    
+    times=("5m|300" "10m|600" "15m|900" "30m|1800" "1h|3600" "2h|7200")
+    for t in $times; do
+        label="${t%%|*}"
+        sec="${t#*|}"
+        if (( sec < TOTAL_SEC )); then
+            p_count=$(get_parts_smart $sec)
+            split_options+=("Every $label ($p_count parts) | $sec")
+        fi
+    done
+    
+    split_options+=("Custom Part Count | custom_parts")
+    split_options+=("Custom Duration (mins) | custom_mins")
+
+    if command -v fzf >/dev/null 2>&1; then
+        CHOICE=$(printf "%s\n" "${split_options[@]}" | fzf --prompt="All Split Options: " --height=~15 --reverse)
+    else
+        echo "All Split Options:"
+        for (( i=1; i<=${#split_options[@]}; i++ )); do echo "[$i] ${split_options[$i]%%|*}"; done
+        echo -n "Choice [1-${#split_options[@]}]: "; read opt_idx; CHOICE=${split_options[$opt_idx]}
+    fi
+    if [[ -z "$CHOICE" ]]; then exit 0; fi
+    VALUE=$(echo "$CHOICE" | cut -d'|' -f2 | xargs)
+fi
+
+# --- Final Interval Calculation ---
+INTERVAL=0
+if [[ "$VALUE" == "custom_parts" ]]; then
+    echo -n "Enter number of parts: "; read PARTS; INTERVAL=$(( (TOTAL_SEC + PARTS - 1) / PARTS ))
+elif [[ "$VALUE" == "custom_mins" ]]; then
+    echo -n "Enter minutes per part: "; read MINS; INTERVAL=$(( MINS * 60 ))
+    PARTS=$(get_parts_smart $INTERVAL)
+else
+    INTERVAL=$((VALUE))
+    PARTS=$(get_parts_smart $INTERVAL)
+fi
+
+echo "Target: $PARTS parts (~$(human_time $INTERVAL) each)"
+
+# Final confirmation
+echo -n "Proceed with Full Download + Split? [Y/n] "
+read -r CONFIRM
+if [[ "$CONFIRM" =~ ^[Nn]$ ]]; then exit 0; fi
+
+# --- PHASE 1: Full Download (Fast) ---
+TMP_FILE="full_video_$(date +%s).tmp"
+echo "--- PHASE 1: Downloading full 1080p MP4 at max speed (-N 16) ---"
+yt-dlp -N 16 --no-warnings \
+       -f "bestvideo[height<=1080]+bestaudio/best[height<=1080]" \
+       --merge-output-format mp4 \
+       -o "$TMP_FILE.%(ext)s" "$URL"
+
+DOWNLOADED_FILE=$(ls ${TMP_FILE}.* | head -n 1)
+EXT="${DOWNLOADED_FILE##*.}"
+
+if [[ ! -f "$DOWNLOADED_FILE" ]]; then
+    echo "Error: Download failed."
+    exit 1
+fi
+
+# --- PHASE 2: Local Splitting (Instant) ---
+echo "--- PHASE 2: Splitting locally with FFmpeg (Stream Copy) ---"
+for (( i=0; i<PARTS; i++ )); do
+    START=$(( i * INTERVAL ))
+    START_STR=$(format_time $START)
+    PART_NUM=$(( i + 1 ))
+    
+    # Smart End Calculation: Last part always goes to the very end
+    if (( i == PARTS - 1 )); then
+        echo "Creating Final Part $PART_NUM (starting at $START_STR to end)..."
+        ffmpeg -ss "$START_STR" -i "$DOWNLOADED_FILE" \
+               -c copy -map 0 \
+               -avoid_negative_ts make_zero \
+               "${TITLE}.part${PART_NUM}.${EXT}" -y -loglevel error
+    else
+        echo "Creating Part $PART_NUM (starting at $START_STR)..."
+        ffmpeg -ss "$START_STR" -i "$DOWNLOADED_FILE" \
+               -t "$INTERVAL" \
+               -c copy -map 0 \
+               -avoid_negative_ts make_zero \
+               "${TITLE}.part${PART_NUM}.${EXT}" -y -loglevel error
+    fi
+done
+
+# Cleanup
+echo "Cleaning up temporary file..."
+rm "$DOWNLOADED_FILE"
+
+echo "Successfully completed! Splitted into $PARTS parts."

@@ -13,20 +13,15 @@
 # User
 *.bak
 
-# Zsh custom remote plugins
-.config/zsh/custom/plugins/fast-syntax-highlighting
-.config/zsh/custom/plugins/zsh*
+# Zsh custom remote plugins (downloaded into the stowed folder)
+**/.config/zsh/custom/plugins/fast-syntax-highlighting
+**/.config/zsh/custom/plugins/zsh*
 # Zsh custom env
 env.zsh
 
-# Lazyvim plugins state
-lazy-lock.json
+# Lazyvim state (lazy-lock.json IS tracked so plugin versions are reproducible)
 lazyvim.json
 
 # ZED Editor
-.config/zed/embeddings/*
-.config/zed/conversations/*
-.config/zed/.*
-
-.config/zed/*
-!.config/zed/*.json
+**/.config/zed/*
+!**/.config/zed/*.json

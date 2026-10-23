@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# dotfiles-check: is everything wired up, and did Omarchy change the file you own?
+#
+#   dotfiles-check            check links, hook lines, SSH agent, signing, Omarchy changes
+#   dotfiles-check --online   also test SSH access to GitHub
+#   dotfiles-check --quiet    print only problems (used by the post-update hook)
+#   dotfiles-check --accept   after merging Omarchy's change: record it as the new baseline
+#                             (and refresh the Mac copies of Omarchy files)
+
+set -u
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../../.." && pwd -P)"
+OMARCHY_PATH="${OMARCHY_PATH:-/usr/share/omarchy}"
+BASELINES="$DOTFILES_DIR/upstream/omarchy"
+# Omarchy files you own a copy of: "baseline name|Omarchy file|your copy"
+OWNED=("starship|$OMARCHY_PATH/config/starship.toml|omarchy/starship/.config/starship.toml")
+# Omarchy files copied as-is for the Mac, so it gets the same defaults: "Omarchy file|copy"
+MIRRORS=("$OMARCHY_PATH/config/git/config|standalone/git/.config/git/config")
+
+online=false quiet=false
+case "${1:-}" in
+  --online) online=true ;;
+  --quiet) quiet=true ;;
+  --accept)
+    for entry in "${OWNED[@]}"; do
+      IFS='|' read -r name src _ <<<"$entry"
+      cp "$src" "$BASELINES/$name" && echo "baseline updated: $name"
+    done
+    for entry in "${MIRRORS[@]}"; do
+      IFS='|' read -r src copy <<<"$entry"
+      cp "$src" "$DOTFILES_DIR/$copy" && echo "Mac copy updated: $copy"
+    done
+    pacman -Q omarchy-settings >"$BASELINES/VERSION" && echo "Now commit upstream/omarchy/ and standalone/."
+    exit 0 ;;
+  -h|--help) sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
+issues=0
+ok()  { $quiet || printf '  \033[32m✓\033[0m %s\n' "$1"; }
+bad() { printf '  \033[31m✗\033[0m %s\n' "$1"; issues=$((issues + 1)); }
+check() { if eval "$1" >/dev/null 2>&1; then ok "$2"; else bad "$3"; fi; }
+
+packages="$("$DOTFILES_DIR/install.sh" --list)" # this machine's stow packages
+
+unlinked=0
+for pkg in $packages; do
+  while IFS= read -r rel; do
+    rel="${rel#./}"
+    [[ "$(readlink -f "$HOME/$rel")" == "$DOTFILES_DIR/$pkg/$rel" ]] || { bad "~/$rel is not linked (run install.sh --link-only)"; unlinked=1; }
+  done < <(cd "$DOTFILES_DIR/$pkg" && find . -type f)
+done
+(( unlinked )) || ok "all dotfiles are linked"
+
+check "git config --get user.email" "git identity: $(git config --get user.email)" "git user.email is not set"
+check "[[ \$(git config --get commit.gpgsign) == true ]]" "commits are signed" "commit signing is off (see ~/.gitconfig.local)"
+$online && check "ssh -o BatchMode=yes -T git@github.com 2>&1 | grep -q 'successfully authenticated'" \
+  "GitHub SSH access works" "GitHub SSH access failed (try: ssh -T git@github.com)"
+
+if [[ -d $OMARCHY_PATH ]]; then
+  check "grep -qF 'source ~/.config/shell/rc.sh' ~/.bashrc" "~/.bashrc loads your shell config" "~/.bashrc lost its rc.sh line (run install.sh --link-only)"
+  check "grep -qF 'tmux.local.conf' ~/.config/tmux/tmux.conf" "tmux.conf loads tmux.local.conf" "tmux.conf lost its tmux.local.conf line (run install.sh --link-only)"
+  check "grep -qF 'require(\"hypr.hachi\")' ~/.config/hypr/hyprland.lua" "hyprland.lua loads hachi.lua" "hyprland.lua lost its hachi.lua line (run install.sh --link-only)"
+  check "systemctl --user show-environment | grep -q '^SSH_ASKPASS='" "SSH agent and passphrase dialog active" "SSH agent settings not active (log out and back in after install)"
+
+  for entry in "${OWNED[@]}"; do
+    IFS='|' read -r name src mine <<<"$entry"
+    if cmp -s "$BASELINES/$name" "$src"; then
+      ok "$name: Omarchy unchanged since $(cut -d' ' -f2 "$BASELINES/VERSION")"
+    else
+      bad "$name: Omarchy changed it; merge into $mine, then dotfiles-check --accept"
+      $quiet || diff -u --label baseline --label "omarchy now" "$BASELINES/$name" "$src" | sed 's/^/      /'
+      cmp -s "$src" "$DOTFILES_DIR/$mine" && bad "$name: your copy now equals Omarchy's; you can drop it from dotfiles"
+    fi
+  done
+
+  for entry in "${MIRRORS[@]}"; do
+    IFS='|' read -r src copy <<<"$entry"
+    if cmp -s "$src" "$DOTFILES_DIR/$copy"; then
+      ok "$copy matches Omarchy's"
+    else
+      bad "Omarchy changed $src; refresh the Mac copy with dotfiles-check --accept"
+      $quiet || diff -u --label "Mac copy" --label "omarchy now" "$DOTFILES_DIR/$copy" "$src" | sed 's/^/      /'
+    fi
+  done
+fi
+
+if (( issues )); then echo "dotfiles-check: $issues issue(s)"; exit 1; fi
+$quiet || echo "All good."

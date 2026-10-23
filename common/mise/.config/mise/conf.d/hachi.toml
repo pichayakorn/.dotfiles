@@ -1,0 +1,9 @@
+[tools]
+bun = "latest"
+uv = "latest"
+"npm:czg" = "latest"  # conventional commits (lazygit `C`)
+"github:talwat/pokeget-rs" = "latest"  # prebuilt binary, no Rust build (`ffp`)
+
+[settings]
+python.uv_venv_auto = "create|source"
+

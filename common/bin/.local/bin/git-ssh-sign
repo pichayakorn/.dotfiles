@@ -1,0 +1,22 @@
+#!/bin/sh
+# Git runs this instead of ssh-keygen for SSH commit signing (gpg.ssh.program).
+# On the first signature of a session it loads the key into ssh-agent (asking
+# for the passphrase once), so later commits, including AI agents', sign silently.
+# `ssh` already does the same for push/pull via `AddKeysToAgent yes`.
+
+if [ "$1" = "-Y" ] && [ "$2" = "sign" ]; then
+  key=""
+  prev=""
+  for arg in "$@"; do
+    [ "$prev" = "-f" ] && key="$arg"
+    prev="$arg"
+  done
+  case "$key" in
+    *.pub)
+      # -T: exit 0 if the agent can already sign with this key
+      ssh-add -T "$key" >/dev/null 2>&1 || ssh-add "${key%.pub}" </dev/null >/dev/null 2>&1
+      ;;
+  esac
+fi
+
+exec ssh-keygen "$@"

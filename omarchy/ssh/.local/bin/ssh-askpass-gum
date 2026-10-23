@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# SSH_ASKPASS for programs without a terminal (login hook, AI agents' git): asks ssh's
+# question in Omarchy's floating terminal, styled like Omarchy's own prompts (logo,
+# green intro, gum input in the current theme), and prints the answer for ssh.
+# Closing the window cancels.
+
+umask 077
+answer=$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/askpass.XXXXXX") || exit 1
+trap 'rm -f "$answer"' EXIT
+
+export OMARCHY_PATH="${OMARCHY_PATH:-/usr/share/omarchy}" # for omarchy-show-logo
+source omarchy-restart-gum # gum colors of the current theme
+
+# Which key ssh is asking about, from e.g. "Enter passphrase for /home/me/.ssh/id_ed25519: "
+key=$(grep -o "/[^ ':]*" <<<"$1" | head -n 1)
+key=${key##*/}
+
+if [[ $SSH_ASKPASS_PROMPT == confirm ]]; then
+  ask='omarchy-show-logo; gum confirm "$1" && echo yes >"$2"'
+else
+  ask='omarchy-show-logo
+echo -e "\e[32mUnlock SSH key ${3:+$3 }for this session.\n\e[0m"
+gum input --password --prompt "Passphrase> " --placeholder "${1%: }" >"$2"'
+fi
+
+xdg-terminal-exec --app-id=org.omarchy.terminal --title=Omarchy -e bash -c "$ask" _ "$1" "$answer" "${key:-}" 2>/dev/null
+
+[[ -s $answer ]] || exit 1
+[[ $SSH_ASKPASS_PROMPT == confirm ]] || cat "$answer"

@@ -1,0 +1,27 @@
+# ~/.gitconfig.local: per-machine git settings, not tracked (copied here by install.sh).
+# Identity lives in the shared ~/.gitconfig. Uncomment what this machine needs.
+
+# Signing, option a) GPG key (imported on this machine, e.g. the Mac)
+# [user]
+#   signingkey = 87702367D7332899
+# [commit]
+#   gpgsign = true
+
+# Signing, option b) SSH key ~/.ssh/id_ed25519 (with passphrase; ssh-agent asks once
+# per session). Register it once: gh ssh-key add ~/.ssh/id_ed25519.pub --type signing
+# [gpg]
+#   format = ssh
+# [gpg "ssh"]
+#   program = git-ssh-sign
+#   allowedSignersFile = ~/.ssh/allowed_signers
+# [user]
+#   signingkey = ~/.ssh/id_ed25519.pub
+# [commit]
+#   gpgsign = true
+# [tag]
+#   gpgsign = true
+
+# Work identity for repos in a folder (or by remote: "hasconfig:remote.*.url:git@git.company.com:*/**").
+# ~/.gitconfig.work holds the work [user] name/email/signingkey; the work SSH key goes in ~/.ssh/config.
+# [includeIf "gitdir:~/Work/company/"]
+#   path = ~/.gitconfig.work

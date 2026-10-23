@@ -4,7 +4,7 @@ A collection of configuration files for macOS and Linux (Arch/EndeavourOS), opti
 
 ## ✨ Features
 
-- **Shell**: Zsh managed by [Oh My Zsh](https://ohmyz.sh/) with custom plugins and themes.
+- **Shell**: Bash on Omarchy, Zsh with [Oh My Zsh](https://ohmyz.sh/) elsewhere — aliases and functions are shared.
 - **Editors**:
   - **Neovim**: Powerful config using [Lazy.nvim](https://github.com/folke/lazy.nvim).
   - **Zed**: Modern, fast editor with custom settings.
@@ -18,7 +18,7 @@ A collection of configuration files for macOS and Linux (Arch/EndeavourOS), opti
   - [eza](https://github.com/eza-community/eza): A modern replacement for `ls`.
   - [zoxide](https://github.com/ajeetdsouza/zoxide): A smarter `cd` command.
 - **System**:
-  - Multi-OS support (macOS, Arch Linux).
+  - Multi-OS support (Omarchy, macOS, Arch Linux / EndeavourOS).
   - Automated installation script.
   - Managed by [GNU Stow](https://www.gnu.org/software/stow/) for clean symlinking.
 
@@ -34,19 +34,66 @@ For detailed installation instructions, including manual steps and prerequisites
 
 ## 📂 Structure
 
-- `.config/`: Application-specific configurations (Alacritty, Nvim, Tmux, Zed, etc.).
-- `.config/zsh/custom/`: Custom Zsh aliases, functions, and plugin scripts.
-- `install.sh`: The main installation and setup script.
-- `.stowrc`: Configuration for GNU Stow to manage symlinks correctly.
+Configs are split into [GNU Stow](https://www.gnu.org/software/stow/) packages, grouped by where they apply:
+
+| Group | Packages | Used on |
+|---|---|---|
+| `common/` | `git` `shell` `bin` `lazygit` `mise` `conda` | everywhere |
+| `omarchy/` | `tmux` `hypr` `starship` `ssh` `hooks` | [Omarchy](https://omarchy.org) — layered on top of Omarchy's defaults |
+| `standalone/` | `zsh` `git` `alacritty` `btop` `tmux` `nvim` `fastfetch` `zed` | macOS, Arch, EndeavourOS — full setup |
+| `windows/` | `powershell` | not stowed by `install.sh` |
+
+- `common/shell/.config/shell/`: aliases, functions and fzf settings shared by bash and zsh (`rc.sh` is the entry point).
+- `common/bin/.local/bin/`: personal commands on `PATH` (`dlmusic`, `yt-split`). They are zsh scripts, so `zsh` is installed on every machine as their interpreter, even where bash is the login shell.
+- `standalone/git/.config/git/config`: an unmodified copy of Omarchy's git defaults (rebase on pull, auto upstream on push, histogram diffs, rerere), so the Mac behaves the same; `~/.gitconfig` is read after it and wins. `dotfiles-check` on Omarchy flags when Omarchy changes it, and `--accept` refreshes the copy.
+- `templates/gitconfig.local`: per-machine git settings (signing key, work identity), copied to `~/.gitconfig.local`.
+
+### On Omarchy
+
+**Rule: Omarchy owns everything; this repo holds only your differences, in your own files.** Where Omarchy owns a file, `install.sh` adds one line that loads yours:
+
+| Omarchy's file | Gets one line loading | Yours |
+|---|---|---|
+| `~/.bashrc` | `~/.config/shell/rc.sh` | aliases, functions, fzf |
+| `~/.config/tmux/tmux.conf` | `tmux.local.conf` | prefix `C-t`, vim panes, `\|`/`-` splits |
+| `~/.config/hypr/hyprland.lua` | `hypr/hachi.lua` | natural scrolling |
+
+Other layers need no line: `~/.gitconfig` overrides Omarchy's `~/.config/git/config`, `mise/conf.d/hachi.toml` sits next to Omarchy's `config.toml`, colors follow `omarchy theme`. The one copy you own is `starship.toml` (Omarchy's prompt + Node/Python versions in projects), because starship can't include another file.
+
+SSH (package `omarchy/ssh`, self-contained: copy that folder to share it): one key (`~/.ssh/id_ed25519`, with passphrase) for push/pull and signing. `ssh-agent.socket` + `environment.d` serve it to every process. Right after login a `post-boot` hook (`ssh-unlock`) asks for the passphrase in a themed floating prompt (`ssh-askpass-gum`), so the key stays unlocked until logout, even for AI agents. Cancel it and the first push, pull or signed commit asks instead (`git-ssh-sign` loads the key for signing like `AddKeysToAgent` does for push/pull).
+
+### Keeping up with Omarchy
+
+```bash
+dotfiles-check            # links, the hook lines, SSH agent, signing, Omarchy changes to starship.toml
+dotfiles-check --online   # also test GitHub SSH access
+dotfiles-check --accept   # after merging Omarchy's starship change into yours: new baseline, then commit
+```
+
+`upstream/omarchy/starship` is Omarchy's prompt as you last reviewed it, so the check shows only Omarchy's changes. A `post-update` hook runs the check after every `omarchy update` and notifies you only if something needs a look. If a refresh resets one of Omarchy's files, `./install.sh --link-only` adds the line back.
+
+### Maintaining it
+
+1. Use Omarchy's default first; add something only after you've missed it twice.
+2. Add, don't replace: your own small file + one line, never a copy of Omarchy's file.
+3. Edit through the links (`~/.config/shell/aliases.sh` is the repo file), then `git diff` and commit.
+4. Prune now and then: aliases and packages you no longer use.
 
 ## 🛠 Manual Management
 
-If you want to manually symlink files using Stow:
+Preview what the installer would back up and link, without changing anything:
 
 ```bash
-git clone https://github.com/pichayakorn/.dotfiles.git ~/.dotfiles
+./install.sh --dry-run
+```
+
+Or symlink individual packages with Stow (`.stowrc` sets the target to `~`):
+
+```bash
 cd ~/.dotfiles
-stow .
+stow -d common git shell bin mise
+stow -d omarchy tmux hypr starship ssh hooks  # Omarchy (+ the hook lines, see above)
+stow -d standalone zsh git alacritty nvim # macOS / Arch
 ```
 
 ## 📜 License

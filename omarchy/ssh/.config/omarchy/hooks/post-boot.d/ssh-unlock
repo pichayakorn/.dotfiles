@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Right after login: ask for the SSH key's passphrase once (themed gum prompt) and keep the key
+# in ssh-agent until logout, so push/pull and signed commits, also AI agents', just work.
+# Cancel the dialog to skip; the first push or signed commit will ask again.
+
+key=~/.ssh/id_ed25519
+[[ -r $key ]] || exit 0
+
+export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-$XDG_RUNTIME_DIR/ssh-agent.socket}"
+ssh-add -T "$key.pub" >/dev/null 2>&1 && exit 0 # already unlocked
+
+SSH_ASKPASS=~/.local/bin/ssh-askpass-gum SSH_ASKPASS_REQUIRE=force ssh-add "$key" </dev/null >/dev/null 2>&1 ||
+  omarchy-notification-send -u low "SSH key still locked" "Your first push or signed commit will ask for the passphrase"

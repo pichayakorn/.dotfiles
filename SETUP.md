@@ -2,6 +2,8 @@
 
 This guide explains how to set up a new machine (macOS or Linux) using these dotfiles.
 
+> **Omarchy:** use the installer. It keeps Omarchy's bash, terminal, Neovim and theming, and only hooks your own files into `~/.bashrc` and `tmux.conf` with one line each. Never run `stow .` on the repo root.
+
 ## 🚀 Automated Installation (Recommended)
 
 You can set up everything with a single command:
@@ -73,43 +75,43 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 The following tools are used throughout the configuration. Choose the installation method for your OS.
 
 #### macOS (Homebrew)
+The package list lives in [`Brewfile`](./Brewfile) (CLI tools, apps and the IosevkaTerm Nerd Font):
 ```bash
-# CLI Utilities
-brew install neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv pnpm
-
-# GUI Applications & Fonts
-brew install --cask alacritty zed vscodium discord font-iosevka-term-nerd-font
+brew bundle --file=~/.dotfiles/Brewfile
 ```
 
 #### Arch Linux / Manjaro / Omarchy / EndeavourOS (Pacman & AUR)
 ```bash
 # Core & CLI Tools
-sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq hub git-lfs mise uv alacritty zed pnpm ttf-iosevkaterm-nerd discord
+sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq github-cli git-lfs mise alacritty zed ttf-iosevkaterm-nerd discord
 
-# AUR Packages (using yay, paru, or pamac)
-# On Manjaro/Omarchy/EndeavourOS, you can use your preferred AUR helper.
-yay -S vscodium-bin pokeget-rs
+# AUR Packages (using yay, paru, or pamac; not needed on Omarchy)
+yay -S vscodium-bin
 # or
-pamac install vscodium-bin pokeget-rs
+pamac install vscodium-bin
+
+# pokeget (for `ffp`) comes from mise on every machine: `mise install`
 ```
 
 ### 5. Apply Dotfiles (Symlinking)
 
-Use GNU Stow to symlink the configuration files to your home directory:
+Use GNU Stow to symlink the packages for your machine (see the Structure table in the README):
 
 ```bash
 cd ~/.dotfiles
-stow .
+stow -d common git shell bin lazygit mise conda
+stow -d standalone zsh git alacritty btop tmux nvim fastfetch zed   # macOS / Arch
+# stow -d omarchy tmux hypr starship                 # Omarchy instead of standalone (use install.sh: it also adds the source lines)
 ```
 
-This will create symlinks for `.zshrc`, `.gitconfig`, `.config/`, etc., in your `$HOME` directory. The `.stowrc` file in this repository is pre-configured to ignore setup files, backups, and logs automatically.
+Stow refuses to replace existing files. Move them aside first, or let `./install.sh --link-only` back them up for you.
 
 ### 6. Download ZSH Plugins
 
 Run the provided script to download custom ZSH plugins:
 
 ```bash
-bash ~/.config/zsh/custom/scripts/download-plugins.sh
+bash ~/.config/zsh/custom/scripts/download-plugins.sh   # zsh (standalone) only
 ```
 
 ### 7. Initialize Mise
@@ -123,12 +125,9 @@ mise install
 ### 8. Final Steps
 
 - **Neovim**: Run `nvim` to let the plugin manager (Lazy.nvim) install all plugins.
-- **GPG**: If you use GPG for signing commits, import your keys and ensure `gpg` is configured.
+- **GPG**: If you sign commits, import your key and enable signing in `~/.gitconfig.local` (template: `templates/gitconfig.local`).
 - **Fonts**: This setup is optimized for **IosevkaTerm Nerd Font** (package: `ttf-iosevkaterm-nerd` or `font-iosevka-term-nerd-font`). You can find it at [Nerd Fonts](https://www.nerdfonts.com/font-downloads).
-- **Commitizen**: Ensure `cz-conventional-changelog` is installed globally if you use `git cz`.
-  ```bash
-  npm install -g commitizen cz-conventional-changelog
-  ```
+- **Conventional commits**: `czg` is installed by `mise install` (see `~/.config/mise/conf.d/hachi.toml`). Run `czg` in a repo, or press `C` in lazygit.
 
 Reload your shell:
 ```bash

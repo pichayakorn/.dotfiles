@@ -1,0 +1,7 @@
+customCommands:
+  - key: "C"
+    command: "czg"
+    description: "commit with czg (conventional commits)"
+    context: "files"
+    loadingText: "opening czg"
+    output: terminal

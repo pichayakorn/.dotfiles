@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# After `omarchy update`: check the dotfiles are still wired up and whether Omarchy
+# changed any file you customise. Quiet unless something needs a look.
+
+command -v dotfiles-check >/dev/null || exit 0
+
+if ! output=$(dotfiles-check --quiet 2>&1); then
+  echo "$output"
+  omarchy-notification-send -u normal "Dotfiles: review after update" "$(tail -n 1 <<<"$output")" \
+    --exec omarchy-launch-floating-terminal-with-presentation dotfiles-check
+fi
