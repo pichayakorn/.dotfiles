@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# ssh-setup: one SSH key for GitHub push/pull and commit signing, on a new machine.
+# Safe to re-run: every step skips what is already done.
+#
+#   ssh-setup            key, ~/.ssh/config, allowed_signers, signing in ~/.gitconfig.local,
+#                        register the key on GitHub (gh), test GitHub access
+#   ssh-setup --remote   also switch the dotfiles repo's origin from https to ssh
+
+set -eu
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../../../.." && pwd -P)"
+KEY="$HOME/.ssh/id_ed25519"
+LOCAL_GITCONFIG="$HOME/.gitconfig.local"
+
+remote=false
+case "${1:-}" in
+  --remote) remote=true ;;
+  -h|--help) sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  "") ;;
+  *) echo "Unknown option: $1" >&2; exit 1 ;;
+esac
+
+step() { printf '\033[36m==>\033[0m %s\n' "$1"; }
+ok()   { printf '  \033[32m✓\033[0m %s\n' "$1"; }
+todo() { printf '  \033[33m!\033[0m %s\n' "$1"; }
+
+email="$(git config --get user.email || true)"
+[[ -n $email ]] || { echo "git user.email is not set; run install.sh first (it links ~/.gitconfig)" >&2; exit 1; }
+
+# 1. Key, with a passphrase (ssh-agent asks once per session)
+step "SSH key"
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+if [[ -f $KEY ]]; then
+  ok "$KEY exists"
+else
+  ssh-keygen -t ed25519 -C "$email" -f "$KEY"
+  ok "created $KEY"
+fi
+pub="$(cut -d' ' -f1,2 "$KEY.pub")" # type + key, without the comment
+
+# 2. Load the key into the agent on first use (push/pull); git-ssh-sign does it for signing
+step "~/.ssh/config"
+touch ~/.ssh/config && chmod 600 ~/.ssh/config
+if grep -qiE '^[[:space:]]*Host[[:space:]].*github\.com' ~/.ssh/config; then
+  ok "github.com entry exists (left as is)"
+else
+  [[ -s ~/.ssh/config ]] && echo >>~/.ssh/config
+  cat >>~/.ssh/config <<EOF
+Host github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+  AddKeysToAgent yes
+EOF
+  ok "added github.com entry"
+fi
+
+# 3. Trust your own key, so git log --show-signature verifies your commits
+step "~/.ssh/allowed_signers"
+touch ~/.ssh/allowed_signers
+if grep -qF "$pub" ~/.ssh/allowed_signers; then
+  ok "key already listed"
+else
+  echo "$email namespaces=\"git\" $pub" >>~/.ssh/allowed_signers
+  ok "added $email"
+fi
+
+# 4. Sign commits and tags with the key (per machine, so in ~/.gitconfig.local)
+step "commit signing"
+[[ -f $LOCAL_GITCONFIG ]] || cp "$DOTFILES_DIR/templates/gitconfig.local" "$LOCAL_GITCONFIG"
+signing_key="$(git config --file "$LOCAL_GITCONFIG" --get user.signingkey || true)"
+if [[ -n $signing_key && $signing_key != "~/.ssh/id_ed25519.pub" ]]; then
+  todo "~/.gitconfig.local already signs with $signing_key; left as is"
+else
+  git config --file "$LOCAL_GITCONFIG" gpg.format ssh
+  git config --file "$LOCAL_GITCONFIG" gpg.ssh.program git-ssh-sign
+  git config --file "$LOCAL_GITCONFIG" gpg.ssh.allowedSignersFile "~/.ssh/allowed_signers"
+  git config --file "$LOCAL_GITCONFIG" user.signingkey "~/.ssh/id_ed25519.pub"
+  git config --file "$LOCAL_GITCONFIG" commit.gpgsign true
+  git config --file "$LOCAL_GITCONFIG" tag.gpgsign true
+  ok "SSH signing on in ~/.gitconfig.local"
+fi
+
+# 5. Register the key on GitHub, once as authentication and once as signing key
+step "GitHub"
+title="$(hostname 2>/dev/null || cat /etc/hostname)"
+register() { # $1 = api path, $2 = gh --type, $3 = label
+  if gh api "$1" --paginate --jq '.[].key' 2>/dev/null | grep -qF "$pub"; then
+    ok "$3 key registered"
+  elif gh ssh-key add "$KEY.pub" --title "$title" --type "$2" >/dev/null; then
+    ok "$3 key added as \"$title\""
+  else
+    todo "could not add the $3 key; run: gh auth refresh -h github.com -s admin:public_key,admin:ssh_signing_key"
+    return 1
+  fi
+}
+# Log in to gh (or add the key scopes) when someone is at the terminal; gh opens a browser
+scopes=admin:public_key,admin:ssh_signing_key
+if command -v gh >/dev/null && [[ -t 0 ]]; then
+  if ! gh auth status >/dev/null 2>&1; then
+    gh auth login -h github.com -p ssh --skip-ssh-key -s "$scopes" || true
+  elif ! gh auth status 2>&1 | grep -q admin:ssh_signing_key; then
+    gh auth refresh -h github.com -s "$scopes" || true
+  fi
+fi
+if command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
+  register user/keys authentication authentication || true
+  register user/ssh_signing_keys signing signing || true
+else
+  todo "gh is not installed or not logged in; add this key twice at https://github.com/settings/ssh/new"
+  todo "(Key type: Authentication Key, then again as Signing Key):"
+  echo "      $(cat "$KEY.pub")"
+fi
+
+# 6. Use ssh for the dotfiles repo itself
+if $remote; then
+  step "dotfiles remote"
+  url="$(git -C "$DOTFILES_DIR" remote get-url origin)"
+  if [[ $url == https://github.com/* ]]; then
+    repo="${url#https://github.com/}"
+    git -C "$DOTFILES_DIR" remote set-url origin "git@github.com:${repo%.git}.git"
+    ok "origin: git@github.com:${repo%.git}.git"
+  else
+    ok "origin: $url"
+  fi
+fi
+
+# 7. Test it
+step "test"
+ssh -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1 | grep -q 'successfully authenticated' \
+  && ok "GitHub accepts the key" \
+  || todo "GitHub rejected the key (registered yet?); retry: ssh -T git@github.com"

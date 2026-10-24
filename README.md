@@ -60,13 +60,14 @@ Configs are split into [GNU Stow](https://www.gnu.org/software/stow/) packages, 
 
 Other layers need no line: `~/.gitconfig` overrides Omarchy's `~/.config/git/config`, `mise/conf.d/hachi.toml` sits next to Omarchy's `config.toml`, colors follow `omarchy theme`. The one copy you own is `starship.toml` (Omarchy's prompt + Node/Python versions in projects), because starship can't include another file.
 
-SSH (package `omarchy/ssh`, self-contained: copy that folder to share it): one key (`~/.ssh/id_ed25519`, with passphrase) for push/pull and signing. `ssh-agent.socket` + `environment.d` serve it to every process. Right after login a `post-boot` hook (`ssh-unlock`) asks for the passphrase in a themed floating prompt (`ssh-askpass-gum`), so the key stays unlocked until logout, even for AI agents. Cancel it and the first push, pull or signed commit asks instead (`git-ssh-sign` loads the key for signing like `AddKeysToAgent` does for push/pull).
+SSH (package `omarchy/ssh`, self-contained: copy that folder to share it): one key (`~/.ssh/id_ed25519`, with passphrase) for push/pull and signing. `ssh-agent.socket` + `environment.d` serve it to every process. Right after login a `post-boot` hook (`ssh-unlock`) asks for the passphrase in a themed floating prompt (`ssh-askpass-gum`), so the key stays unlocked until logout, even for AI agents. Cancel it and the first push, pull or signed commit asks instead (`git-ssh-sign` loads the key for signing like `AddKeysToAgent` does for push/pull). On a new machine, `install.sh` offers to run `ssh-setup --remote`, which creates the key, `~/.ssh/config`, `allowed_signers` and the signing settings in `~/.gitconfig.local`, registers the key on GitHub (with `gh`) and switches this repo to ssh.
 
 ### Keeping up with Omarchy
 
 ```bash
 dotfiles-check            # links, the hook lines, SSH agent, signing, Omarchy changes to starship.toml
 dotfiles-check --online   # also test GitHub SSH access
+ssh-setup --remote        # new machine: SSH key for push/pull + signing, registered on GitHub
 dotfiles-check --accept   # after merging Omarchy's starship change into yours: new baseline, then commit
 ```
 

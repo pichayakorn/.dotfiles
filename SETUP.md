@@ -125,7 +125,7 @@ mise install
 ### 8. Final Steps
 
 - **Neovim**: Run `nvim` to let the plugin manager (Lazy.nvim) install all plugins.
-- **GPG**: If you sign commits, import your key and enable signing in `~/.gitconfig.local` (template: `templates/gitconfig.local`).
+- **SSH & signing**: `install.sh` offers this at the end; otherwise run `ssh-setup --remote` for one SSH key used for GitHub push/pull and commit signing (it logs in to `gh` in the browser to register the key). For GPG signing instead (e.g. the Mac), import your key and enable it in `~/.gitconfig.local` (template: `templates/gitconfig.local`).
 - **Fonts**: This setup is optimized for **IosevkaTerm Nerd Font** (package: `ttf-iosevkaterm-nerd` or `font-iosevka-term-nerd-font`). You can find it at [Nerd Fonts](https://www.nerdfonts.com/font-downloads).
 - **Conventional commits**: `czg` is installed by `mise install` (see `~/.config/mise/conf.d/hachi.toml`). Run `czg` in a repo, or press `C` in lazygit.
 
