@@ -12,3 +12,8 @@ if [[ -z "$SSH_AUTH_SOCK" && -S "$XDG_RUNTIME_DIR/ssh-agent.socket" ]]; then
   export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 fi
 
+# bun completions (bun itself comes from mise: ~/.config/mise/conf.d/hachi.toml)
+if command -v bun >/dev/null 2>&1; then
+  source <(SHELL=bash bun completions)
+fi
+
