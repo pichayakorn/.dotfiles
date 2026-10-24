@@ -56,6 +56,9 @@
   root = ~/ghq
 [init]
   defaultBranch = main
+# Push to GitHub over SSH even when the remote is https (no password prompts); fetches stay as they are
+[url "git@github.com:"]
+  pushInsteadOf = https://github.com/
 [interactive]
   diffFilter = delta --color-only
 [delta]

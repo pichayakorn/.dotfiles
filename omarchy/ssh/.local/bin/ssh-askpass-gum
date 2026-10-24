@@ -6,6 +6,11 @@
 # Closing the window cancels.
 
 umask 077
+
+# git also falls back to SSH_ASKPASS for HTTPS logins ("Username for 'https://github.com': ").
+# GitHub doesn't take passwords, so don't ask: git fails and says why. Use an SSH remote instead.
+[[ $1 == "Username for "* || $1 == "Password for "* ]] && exit 1
+
 answer=$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/askpass.XXXXXX") || exit 1
 trap 'rm -f "$answer"' EXIT
 
