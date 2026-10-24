@@ -50,6 +50,15 @@ for pkg in $packages; do
 done
 (( unlinked )) || ok "all dotfiles are linked"
 
+# Commands your dotfiles call (aliases, git config, lazygit, ~/.local/bin scripts)
+commands=(git nvim mise stow zsh delta ghq git-lfs lazygit fzf eza bat rg zoxide ouch yt-dlp ffmpeg wget tmux)
+[[ $packages == *omarchy/* ]] && commands+=(gum starship)
+missing=()
+for cmd in "${commands[@]}"; do command -v "$cmd" >/dev/null || missing+=("$cmd"); done
+if (( ${#missing[@]} )); then bad "missing commands: ${missing[*]} (run install.sh)"; else ok "all needed commands are installed"; fi
+# Tools from ~/.config/mise (bun, uv, czg, ...); Omarchy's lazy tools install on first use
+check "cd ~ && mise install --dry-run 2>&1 | grep -q 'all tools are installed'" "mise tools are installed" "mise tools missing (run: mise install)"
+
 check "git config --get user.email" "git identity: $(git config --get user.email)" "git user.email is not set"
 check "[[ \$(git config --get commit.gpgsign) == true ]]" "commits are signed" "commit signing is off (see ~/.gitconfig.local)"
 $online && check "ssh -o BatchMode=yes -T git@github.com 2>&1 | grep -q 'successfully authenticated'" \
@@ -59,7 +68,8 @@ if [[ -d $OMARCHY_PATH ]]; then
   check "grep -qF 'source ~/.config/shell/rc.sh' ~/.bashrc" "~/.bashrc loads your shell config" "~/.bashrc lost its rc.sh line (run install.sh --link-only)"
   check "grep -qF 'tmux.local.conf' ~/.config/tmux/tmux.conf" "tmux.conf loads tmux.local.conf" "tmux.conf lost its tmux.local.conf line (run install.sh --link-only)"
   check "grep -qF 'require(\"hypr.hachi\")' ~/.config/hypr/hyprland.lua" "hyprland.lua loads hachi.lua" "hyprland.lua lost its hachi.lua line (run install.sh --link-only)"
-  check "systemctl --user show-environment | grep -q '^SSH_ASKPASS='" "SSH agent and passphrase dialog active" "SSH agent settings not active (log out and back in after install)"
+  check "systemctl --user show-environment | grep -q '^SSH_ASKPASS='" "SSH agent and passphrase dialog set up" "SSH agent settings not active (log out and back in after install)"
+  check "[[ -n \${SSH_AUTH_SOCK:-} ]]" "this session uses the SSH agent" "this session has no SSH agent yet (log out and back in; restart AI agents too)"
 
   for entry in "${OWNED[@]}"; do
     IFS='|' read -r name src mine <<<"$entry"

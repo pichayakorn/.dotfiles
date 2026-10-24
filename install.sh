@@ -55,6 +55,8 @@ if [[ "$DISTRO" == "Omarchy" ]]; then
     # step 5b only adds one line to each that loads your files.
     PROFILE_PACKAGES=(tmux hypr starship ssh hooks)
     REAL_DIRS=(.local/bin .config/environment.d)
+    # What Omarchy doesn't ship (dotfiles-check verifies the commands)
+    OMARCHY_PACMAN=(stow git-delta ghq git-lfs ouch zsh wget)
 else
     PROFILE="standalone"
     PROFILE_PACKAGES=(zsh git alacritty btop tmux nvim fastfetch zed)
@@ -66,6 +68,20 @@ if $LIST; then
     printf "$PROFILE/%s\n" "${PROFILE_PACKAGES[@]}"
     exit 0
 fi
+
+# Log everything to a file as well (read it later, or hand it to an AI agent).
+# Passwords and passphrases are typed straight into the terminal, never into the log.
+TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+LOG_FILE="$LOG_DIR/install-$TIMESTAMP.log"
+mkdir -p "$LOG_DIR"
+ln -sfn "install-$TIMESTAMP.log" "$LOG_DIR/install-latest.log"
+exec 3>&1 4>&2 # the terminal, for interactive steps and the final `exec zsh`
+exec > >(tee -a "$LOG_FILE") 2>&1
+TEE_PID=$!
+# On any exit (also errors): let the log catch up before the prompt returns
+trap 'exec 1>&3 2>&4; wait "$TEE_PID" 2>/dev/null || true' EXIT
+info "Logging to $LOG_FILE (options: ${*:-none})"
 
 info "Detected OS: $OS ($DISTRO)"
 
@@ -87,8 +103,6 @@ if [ ! -d "$DOTFILES_DIR" ]; then
     git clone https://github.com/pichayakorn/.dotfiles.git "$DOTFILES_DIR"
 fi
 info "Using dotfiles at $DOTFILES_DIR (profile: $PROFILE)"
-
-TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 # 1. Packages
 if ! $LINK_ONLY; then
@@ -129,7 +143,7 @@ if ! $LINK_ONLY; then
         # a terminal and fonts. zsh is only the interpreter for ~/.local/bin scripts
         # (dlmusic, yt-split); the login shell stays bash.
         info "Installing packages..."
-        sudo pacman -S --needed --noconfirm stow git-delta ghq git-lfs ouch zsh
+        sudo pacman -S --needed --noconfirm "${OMARCHY_PACMAN[@]}"
     fi
 
     # 2. Oh My Zsh (standalone only; Omarchy uses bash)
@@ -164,9 +178,24 @@ if ! $LINK_ONLY; then
     fi
 fi
 
+if $DRY_RUN && [[ "$DISTRO" == "Omarchy" ]]; then
+    missing_pkgs="$(pacman -T "${OMARCHY_PACMAN[@]}" || true)"
+    if [ -n "$missing_pkgs" ]; then
+        info "Would install packages: $(echo $missing_pkgs)"
+    else
+        info "Packages already installed: ${OMARCHY_PACMAN[*]}"
+    fi
+fi
+
+HAVE_STOW=true
 if ! command -v stow &> /dev/null; then
-    error "GNU Stow is not installed. Install it first (pacman -S stow / brew install stow)."
-    exit 1
+    if $DRY_RUN; then
+        HAVE_STOW=false
+        warn "GNU Stow is not installed yet; showing backups and hook lines, not stow's own preview"
+    else
+        error "GNU Stow is not installed. Install it first (pacman -S stow / brew install stow)."
+        exit 1
+    fi
 fi
 
 # 5. Apply Dotfiles
@@ -204,6 +233,7 @@ stow_group() {
     backup_conflicts "$DOTFILES_DIR/$group" "$@"
     if $DRY_RUN; then
         info "Would stow $group: $*"
+        $HAVE_STOW || return 0
         stow --no --verbose=1 "${stow_args[@]}" "$@" 2>&1 | grep -v '^WARNING: in simulation mode' || true
     else
         info "Stowing $group: $*"
@@ -264,7 +294,7 @@ if [ -d "$BACKUP_DIR" ]; then info "Replaced files were saved in $BACKUP_DIR"; f
 # Per-machine git settings (signing key etc.), never tracked
 if [ ! -f "$HOME/.gitconfig.local" ]; then
     cp "$DOTFILES_DIR/templates/gitconfig.local" "$HOME/.gitconfig.local"
-    info "Created ~/.gitconfig.local (enable commit signing there)"
+    info "Created ~/.gitconfig.local (per-machine git settings; ssh-setup turns on signing there)"
 fi
 
 if ! $LINK_ONLY; then
@@ -274,14 +304,33 @@ if ! $LINK_ONLY; then
         bash "$HOME/.config/zsh/custom/scripts/download-plugins.sh"
     fi
 
-    # 7. Mise Install
+    # 7. Mise Install (from ~, so a project's mise.toml in the current folder doesn't count)
     if command -v mise &> /dev/null; then
         info "Running mise install..."
-        mise install -y
+        (cd "$HOME" && mise install -y)
     fi
 fi
 
-# 8. Final Reminders
+# 8. SSH key for GitHub push/pull and commit signing (asks, since it needs a passphrase)
+if [ -f "$HOME/.ssh/id_ed25519" ]; then
+    info "SSH key exists; 'ssh-setup' re-checks its GitHub and signing setup anytime."
+elif [ -r /dev/tty ] && { printf '\033[0;36m[INPUT]\033[0m Set up an SSH key for GitHub (push/pull + signed commits) now? [Y/n] '; read -r answer </dev/tty; [[ ! "$answer" =~ ^[Nn] ]]; }; then
+    # Straight to the terminal: gh's browser login needs one, and it keeps the log clean
+    if "$DOTFILES_DIR/common/bin/.local/bin/ssh-setup" --remote </dev/tty >&3 2>&4; then
+        info "ssh-setup finished (its output went to the terminal only)"
+    else
+        warn "ssh-setup did not finish; run 'ssh-setup --remote' again later."
+    fi
+else
+    info "No SSH key yet: run 'ssh-setup --remote' for GitHub push/pull and commit signing."
+fi
+
+# 9. Verify (some SSH agent items only pass after logging out and back in)
+echo ""
+info "Checking the setup..."
+"$DOTFILES_DIR/common/bin/.local/bin/dotfiles-check" || warn "See the ✗ items above; rerun 'dotfiles-check' after logging out and back in."
+
+# 10. Final Reminders
 echo ""
 success "Setup complete!"
 if [[ "$PROFILE" == "omarchy" ]]; then
@@ -296,5 +345,6 @@ else
 
     # Automatically reload shell
     info "Reloading shell to apply changes..."
+    exec 1>&3 2>&4 3>&- 4>&- # stop logging before handing over the terminal
     exec zsh -l
 fi
