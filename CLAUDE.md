@@ -32,7 +32,7 @@ dotfiles-check              # links, hook lines, SSH agent, signing, Omarchy dri
 dotfiles-check --online     # also GitHub SSH access
 ```
 
-Every `install.sh` run is logged to `~/.local/state/dotfiles/install-<time>.log` (`install-latest.log` points to the newest); read that rather than asking for pasted output. `ssh-setup` output goes to the terminal only.
+Every `install.sh` run is logged to `~/.local/state/dotfiles/logs/install-<time>.log` (`install-latest.log` points to the newest, the last 10 are kept); read that rather than asking for pasted output. `ssh-setup` output goes to the terminal only. Files a run moved out of the way are in `~/.local/state/dotfiles/backups/<time>/`, same timestamp as its log.
 
 Test anything that touches `~/.ssh`, `~/.gitconfig.local` or other real home files against a throwaway `HOME=<scratch dir>` first.
 

@@ -69,11 +69,16 @@ if $LIST; then
     exit 0
 fi
 
+# Everything a run leaves behind lives in one place, matched by timestamp:
+#   logs/install-<time>.log   what the run did (the last 10 are kept)
+#   backups/<time>/           files it moved out of the way (never deleted automatically)
 # Log everything to a file as well (read it later, or hand it to an AI agent).
 # Passwords and passphrases are typed straight into the terminal, never into the log.
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+LOG_DIR="$STATE_DIR/logs"
 LOG_FILE="$LOG_DIR/install-$TIMESTAMP.log"
+BACKUP_DIR="$STATE_DIR/backups/$TIMESTAMP"
 mkdir -p "$LOG_DIR"
 ln -sfn "install-$TIMESTAMP.log" "$LOG_DIR/install-latest.log"
 exec 3>&1 4>&2 # the terminal, for interactive steps and the final `exec zsh`
@@ -82,6 +87,27 @@ TEE_PID=$!
 # On any exit (also errors): let the log catch up before the prompt returns
 trap 'exec 1>&3 2>&4; wait "$TEE_PID" 2>/dev/null || true' EXIT
 info "Logging to $LOG_FILE (options: ${*:-none})"
+
+# Move logs and backups from the earlier layout (~/dotfiles_backup_<time>/, logs
+# directly in $STATE_DIR), then keep only the last 10 logs
+shopt -s nullglob
+for old in "$HOME"/dotfiles_backup_2* "$STATE_DIR"/install-2*.log; do
+    case "$old" in
+        *.log) new="$LOG_DIR/${old##*/}" ;;
+        *) new="$STATE_DIR/backups/${old##*/dotfiles_backup_}" ;;
+    esac
+    if $DRY_RUN; then
+        info "Would move $old to $new"
+    else
+        mkdir -p "$(dirname "$new")" && mv -n "$old" "$new" && info "Moved $old to $new"
+    fi
+done
+if ! $DRY_RUN; then
+    [ -L "$STATE_DIR/install-latest.log" ] && rm "$STATE_DIR/install-latest.log"
+    logs=("$LOG_DIR"/install-2*.log)
+    if (( ${#logs[@]} > 10 )); then rm -f "${logs[@]:0:${#logs[@]}-10}"; fi
+fi
+shopt -u nullglob
 
 info "Detected OS: $OS ($DISTRO)"
 
@@ -199,9 +225,7 @@ if ! command -v stow &> /dev/null; then
 fi
 
 # 5. Apply Dotfiles
-# Move any real file that would block stow into a backup folder (never delete).
-BACKUP_DIR="$HOME/dotfiles_backup_$TIMESTAMP"
-
+# Move any real file that would block stow into $BACKUP_DIR (never delete).
 backup_conflicts() {
     local group_dir="$1"; shift
     local pkg rel target
