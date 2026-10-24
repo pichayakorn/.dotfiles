@@ -1,135 +1,132 @@
 # Machine Setup Guide
 
-This guide explains how to set up a new machine (macOS or Linux) using these dotfiles.
+How to install these dotfiles on a machine. For what's in the repo and why it's organised this way, see the [README](./README.md).
 
-> **Omarchy:** use the installer. It keeps Omarchy's bash, terminal, Neovim and theming, and only hooks your own files into `~/.bashrc` and `tmux.conf` with one line each. Never run `stow .` on the repo root.
+`install.sh` detects the machine and picks a profile:
 
-## 🚀 Automated Installation (Recommended)
+- **Omarchy**: layers your files on top of Omarchy's defaults (bash, its terminal, Neovim and theming stay Omarchy's).
+- **standalone** (macOS, Arch, EndeavourOS): the full setup, with zsh, Oh My Zsh, Alacritty, Neovim and the rest.
 
-You can set up everything with a single command:
+It's safe to run on a machine that's already set up: it skips what's done, never deletes your files, and is also how you repair a machine after something drifts.
+
+## 🚀 Install
+
+**Option 1: one command.** The script clones the repo to `~/.dotfiles` (or `$DOTFILES_DIR`) and installs from there:
 
 ```bash
-# Using bash-c (Safest - downloads entire script before execution)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/pichayakorn/.dotfiles/main/install.sh)"
-
-# OR using a pipe
-curl -fsSL https://raw.githubusercontent.com/pichayakorn/.dotfiles/main/install.sh | bash
 ```
 
-Alternatively, you can clone the repository and run the installer locally:
+**Option 2: clone it yourself.** Use any folder; the script uses the repo it lives in:
 
 ```bash
 git clone https://github.com/pichayakorn/.dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
+./install.sh --dry-run   # optional: preview, changes nothing
 ./install.sh
 ```
 
-The script will handle package manager updates, tool installations via Brew/Pacman, symlinking with GNU Stow, and ZSH plugin setup.
+Option 1 always installs `main`. To try a branch, use option 2 and `git switch <branch>` before running the script.
 
----
+If the repo folder already exists, the script uses it as it is (no `git pull`). On an existing machine, pull first.
 
-## 🛠 Manual Installation
+### Options
 
-If you prefer to set up everything manually, follow these steps:
+| Option | What it does |
+|---|---|
+| `--dry-run` | Show what would be installed, backed up, linked and hooked up; change nothing |
+| `--link-only` | Skip packages, Oh My Zsh, zsh plugins and `mise install`; still backs up, links, adds the hook lines, offers SSH setup and runs the check |
+| `--list` | Print this machine's stow packages |
 
-### 1. Install Prerequisites
+## What the installer does
 
-Ensure you have the following installed on your system:
+### On Omarchy
 
-- **Zsh**: The primary shell.
-- **Git**: For version control.
-- **GNU Stow**: For managing symlinks.
-- **Curl/Wget**: For downloading installers.
+1. **Packages**: installs only what Omarchy doesn't ship: `stow git-delta ghq git-lfs ouch zsh wget` (zsh only runs the scripts in `~/.local/bin`; your login shell stays bash). No system upgrade: that's `omarchy update`'s job.
+2. **Links** the `common/` and `omarchy/` packages into `~`. Files in the way are moved to the backup folder (see [Logs and backups](#logs-and-backups)).
+3. **Hook lines**: adds one line each to `~/.bashrc`, `~/.config/hypr/hyprland.lua` and `~/.config/tmux/tmux.conf` that loads your file, and enables `ssh-agent.socket`.
+4. **`~/.gitconfig.local`**: copied from `templates/gitconfig.local` if it doesn't exist.
+5. **`mise install`**: your tools from `~/.config/mise/conf.d/hachi.toml` (`bun`, `uv`, `czg`, `pokeget`).
+6. **SSH**: if there's no `~/.ssh/id_ed25519`, asks whether to run `ssh-setup --remote` (see [SSH and commit signing](#-ssh-and-commit-signing)).
+7. **Check**: runs `dotfiles-check`.
 
-#### macOS (using Homebrew)
-```bash
-brew install zsh git stow curl wget
-```
+Then open a new terminal, and log out and back in so the SSH agent and its passphrase prompt are active everywhere.
 
-#### Arch Linux / Manjaro / Omarchy / EndeavourOS
-```bash
-sudo pacman -Syu zsh git stow curl wget
-```
+### On macOS / Arch / EndeavourOS
 
-### 2. Clone the Dotfiles
+1. **Packages**:
+   - macOS: Homebrew if missing, then the [`Brewfile`](./Brewfile) (CLI tools, apps, IosevkaTerm Nerd Font). On the first run it asks for a custom folder for apps (e.g. an external SSD), saved in `~/.zshrc.local`.
+   - Arch / EndeavourOS: a full `pacman -Syu` with the CLI tools, Alacritty, Zed and the font; `vscodium-bin` from the AUR if `yay`, `paru` or `pamac` is available.
+2. **Oh My Zsh**, if missing.
+3. **Neovim data**: the first time your Neovim config replaces another one, the old `~/.local/share/nvim`, `~/.local/state/nvim` and `~/.cache/nvim` are renamed to `*.bak_<time>`.
+4. **Links** the `common/` and `standalone/` packages into `~`, backing up files in the way.
+5. **`~/.gitconfig.local`**, **zsh plugins** (`download-plugins.sh`), **`mise install`**, **SSH** and the **check**, as on Omarchy.
+6. Restarts your shell as a zsh login shell.
 
-Clone this repository into your home directory as `~/.dotfiles`:
+Afterwards: open `nvim` once so Lazy.nvim installs its plugins, and set your terminal font to **IosevkaTerm Nerd Font**.
 
-```bash
-git clone https://github.com/pichayakorn/.dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
-```
+## 🔑 SSH and commit signing
 
-### 3. Install Oh My Zsh
+One key, `~/.ssh/id_ed25519` (with a passphrase), for GitHub push/pull and for signing commits. `ssh-setup --remote`:
 
-The Zsh configuration relies on Oh My Zsh:
+1. creates the key if missing,
+2. adds a `github.com` entry to `~/.ssh/config` and your key to `~/.ssh/allowed_signers`,
+3. turns on SSH signing for commits and tags in `~/.gitconfig.local`,
+4. logs in to `gh` in the browser and registers the key on GitHub as an authentication key and a signing key,
+5. switches this repo's `origin` to SSH, then tests GitHub access.
 
-```bash
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-```
+It's safe to re-run anytime to re-check the setup. For GPG signing instead (e.g. the Mac), import your key and enable it in `~/.gitconfig.local` (template: `templates/gitconfig.local`).
 
-*Note: You might need to remove the default `~/.zshrc` created by Oh My Zsh before symlinking.*
-
-### 4. Install Necessary Tools
-
-The following tools are used throughout the configuration. Choose the installation method for your OS.
-
-#### macOS (Homebrew)
-The package list lives in [`Brewfile`](./Brewfile) (CLI tools, apps and the IosevkaTerm Nerd Font):
-```bash
-brew bundle --file=~/.dotfiles/Brewfile
-```
-
-#### Arch Linux / Manjaro / Omarchy / EndeavourOS (Pacman & AUR)
-```bash
-# Core & CLI Tools
-sudo pacman -S neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit git-delta tmux ghq github-cli git-lfs mise alacritty zed ttf-iosevkaterm-nerd discord
-
-# AUR Packages (using yay, paru, or pamac; not needed on Omarchy)
-yay -S vscodium-bin
-# or
-pamac install vscodium-bin
-
-# pokeget (for `ffp`) comes from mise on every machine: `mise install`
-```
-
-### 5. Apply Dotfiles (Symlinking)
-
-Use GNU Stow to symlink the packages for your machine (see the Structure table in the README):
+## ✅ After installing
 
 ```bash
-cd ~/.dotfiles
-stow -d common git shell bin lazygit mise conda
-stow -d standalone zsh git alacritty btop tmux nvim fastfetch zed   # macOS / Arch
-# stow -d omarchy tmux hypr starship                 # Omarchy instead of standalone (use install.sh: it also adds the source lines)
+dotfiles-check            # links, hook lines, commands, mise tools, SSH agent, signing, Omarchy drift
+dotfiles-check --online   # also test GitHub SSH access
 ```
 
-Stow refuses to replace existing files. Move them aside first, or let `./install.sh --link-only` back them up for you.
+### Logs and backups
 
-### 6. Download ZSH Plugins
+Everything a run leaves behind is in `~/.local/state/dotfiles/`, matched by timestamp:
 
-Run the provided script to download custom ZSH plugins:
-
-```bash
-bash ~/.config/zsh/custom/scripts/download-plugins.sh   # zsh (standalone) only
+```
+logs/install-<time>.log    what the run did; install-latest.log points to the newest (the last 10 are kept)
+backups/<time>/            files that run moved out of the way (never deleted automatically)
 ```
 
-### 7. Initialize Mise
+Passwords and passphrases are typed straight into the terminal and never reach the log. Runs before this layout left backups in `~/dotfiles_backup_<time>/`; the next run moves them here.
 
-Mise handles your language versions (Node, Python, etc.). After symlinking your dotfiles, install the default tools defined in `~/.config/mise/config.toml`:
+## 🛠 Manual installation (macOS / Arch)
 
-```bash
-mise install
-```
+Prefer the installer. On **Omarchy, always use the installer**: it also adds the hook lines and turns on the SSH agent. **Never run `stow .` on the repo root.**
 
-### 8. Final Steps
+1. **Prerequisites**:
+   ```bash
+   brew install git stow curl wget              # macOS (zsh is built in)
+   sudo pacman -Syu zsh git stow curl wget      # Arch / EndeavourOS
+   ```
+2. **Clone** the repo (see [Install](#-install), option 2).
+3. **Oh My Zsh**:
+   ```bash
+   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+   ```
+4. **Tools**:
+   ```bash
+   brew bundle --file=Brewfile                  # macOS
+   sudo pacman -S --needed neovim bat ripgrep fzf fd zoxide eza ouch fastfetch btop yt-dlp ffmpeg lazygit \
+     git-delta tmux ghq github-cli git-lfs mise alacritty zed ttf-iosevkaterm-nerd discord   # Arch
+   yay -S vscodium-bin                          # Arch, AUR (or paru / pamac)
+   ```
+5. **Link**: these folders must be real folders, so stow links files into them rather than replacing them with a link:
+   ```bash
+   mkdir -p ~/.local/bin ~/.config/git
+   stow -d common -t ~ git shell bin lazygit mise conda
+   stow -d standalone -t ~ zsh git alacritty btop tmux nvim fastfetch zed
+   ```
+   `./install.sh --list` prints the current package lists. Stow refuses to replace existing files: move them aside first, or use `./install.sh --link-only`, which backs them up.
+6. **Per-machine git settings**: `cp templates/gitconfig.local ~/.gitconfig.local`
+7. **zsh plugins**: `bash ~/.config/zsh/custom/scripts/download-plugins.sh`
+8. **mise tools**: `mise install`
+9. **SSH and signing**: `ssh-setup --remote`
+10. **Check**: `dotfiles-check`, then start a new shell (`exec zsh -l`).
 
-- **Neovim**: Run `nvim` to let the plugin manager (Lazy.nvim) install all plugins.
-- **SSH & signing**: `install.sh` offers this at the end; otherwise run `ssh-setup --remote` for one SSH key used for GitHub push/pull and commit signing (it logs in to `gh` in the browser to register the key). For GPG signing instead (e.g. the Mac), import your key and enable it in `~/.gitconfig.local` (template: `templates/gitconfig.local`).
-- **Fonts**: This setup is optimized for **IosevkaTerm Nerd Font** (package: `ttf-iosevkaterm-nerd` or `font-iosevka-term-nerd-font`). You can find it at [Nerd Fonts](https://www.nerdfonts.com/font-downloads).
-- **Conventional commits**: `czg` is installed by `mise install` (see `~/.config/mise/conf.d/hachi.toml`). Run `czg` in a repo, or press `C` in lazygit.
-
-Reload your shell:
-```bash
-source ~/.zshrc
-```
+**Conventional commits:** `czg` comes from `mise install`. Run `czg` in a repo, or press `C` in lazygit.

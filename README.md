@@ -1,15 +1,16 @@
 # 🌌 .dotfiles
 
-A collection of configuration files for macOS and Linux (Arch/EndeavourOS), optimized for productivity, aesthetics, and a modern development workflow.
+A collection of configuration files for [Omarchy](https://omarchy.org), macOS and Arch Linux / EndeavourOS, optimized for productivity, aesthetics, and a modern development workflow. On Omarchy they're a thin layer on top of Omarchy's defaults; elsewhere they're the full setup.
 
 ## ✨ Features
 
 - **Shell**: Bash on Omarchy, Zsh with [Oh My Zsh](https://ohmyz.sh/) elsewhere — aliases and functions are shared.
-- **Editors**:
+- **Editors** (macOS / Arch; Omarchy keeps its own LazyVim):
   - **Neovim**: Powerful config using [Lazy.nvim](https://github.com/folke/lazy.nvim).
   - **Zed**: Modern, fast editor with custom settings.
   - **VSCodium**: Open-source binary of VS Code.
-- **Terminal**: [Alacritty](https://alacritty.org/) with Catppuccin themes and Iosevka Nerd Font.
+- **Terminal**: [Alacritty](https://alacritty.org/) with Catppuccin themes and Iosevka Nerd Font (macOS / Arch; Omarchy keeps its own terminal and theme).
+- **Git**: one SSH key for push/pull and signed commits, set up by `ssh-setup`.
 - **Tools**:
   - [mise](https://mise.jdx.dev/): Polyglot runtime manager (Node, Python, Rust, etc.).
   - [uv](https://github.com/astral-sh/uv): Ultra-fast Python package installer and resolver.
@@ -19,7 +20,7 @@ A collection of configuration files for macOS and Linux (Arch/EndeavourOS), opti
   - [zoxide](https://github.com/ajeetdsouza/zoxide): A smarter `cd` command.
 - **System**:
   - Multi-OS support (Omarchy, macOS, Arch Linux / EndeavourOS).
-  - Automated installation script.
+  - Automated installation script, safe to re-run, with a dry run and a log of every run.
   - Managed by [GNU Stow](https://www.gnu.org/software/stow/) for clean symlinking.
 
 ## 🚀 Quick Start
@@ -30,7 +31,7 @@ Run the automated installer to set up your environment in minutes:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/pichayakorn/.dotfiles/main/install.sh)"
 ```
 
-For detailed installation instructions, including manual steps and prerequisites, please refer to [SETUP.md](./SETUP.md).
+[SETUP.md](./SETUP.md) has the details: installing from a clone, the installer's options, what it does on each system, SSH setup, logs and backups, and the manual steps.
 
 ## 📂 Structure
 
@@ -43,8 +44,10 @@ Configs are split into [GNU Stow](https://www.gnu.org/software/stow/) packages, 
 | `standalone/` | `zsh` `git` `alacritty` `btop` `tmux` `nvim` `fastfetch` `zed` | macOS, Arch, EndeavourOS — full setup |
 | `windows/` | `powershell` | not stowed by `install.sh` |
 
+`./install.sh --list` prints the packages for the current machine.
+
 - `common/shell/.config/shell/`: aliases, functions and fzf settings shared by bash and zsh (`rc.sh` is the entry point).
-- `common/bin/.local/bin/`: personal commands on `PATH` (`dlmusic`, `yt-split`). They are zsh scripts, so `zsh` is installed on every machine as their interpreter, even where bash is the login shell.
+- `common/bin/.local/bin/`: personal commands on `PATH`: `dlmusic` and `yt-split` (zsh scripts, so `zsh` is installed on every machine as their interpreter, even where bash is the login shell), plus `ssh-setup`, `dotfiles-check` and `git-ssh-sign`.
 - `standalone/git/.config/git/config`: an unmodified copy of Omarchy's git defaults (rebase on pull, auto upstream on push, histogram diffs, rerere), so the Mac behaves the same; `~/.gitconfig` is read after it and wins. `dotfiles-check` on Omarchy flags when Omarchy changes it, and `--accept` refreshes the copy.
 - `templates/gitconfig.local`: per-machine git settings (signing key, work identity), copied to `~/.gitconfig.local`.
 
@@ -82,20 +85,7 @@ dotfiles-check --accept   # after merging Omarchy's starship change into yours: 
 
 ## 🛠 Manual Management
 
-Preview what the installer would back up and link, without changing anything:
-
-```bash
-./install.sh --dry-run
-```
-
-Or symlink individual packages with Stow (`.stowrc` sets the target to `~`):
-
-```bash
-cd ~/.dotfiles
-stow -d common git shell bin mise
-stow -d omarchy tmux hypr starship ssh hooks  # Omarchy (+ the hook lines, see above)
-stow -d standalone zsh git alacritty nvim # macOS / Arch
-```
+Preview with `./install.sh --dry-run`, re-link after changes with `./install.sh --link-only`. Manual stow commands are in [SETUP.md](./SETUP.md#-manual-installation-macos--arch); never run `stow .` on the repo root.
 
 ## 📜 License
 
