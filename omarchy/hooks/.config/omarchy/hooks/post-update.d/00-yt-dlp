@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# After `omarchy update`: update yt-dlp too where mise manages it (ARM machines, whose
+# pacman build lags; see ~/.config/mise/conf.d/hachi.toml). pacman's copy updates with
+# the system. 00- so it runs before the dotfiles-check hook.
+
+cd ~ || exit 0 # a project's mise.toml in the current folder shouldn't count
+command -v mise >/dev/null && mise which yt-dlp >/dev/null 2>&1 || exit 0
+mise up yt-dlp

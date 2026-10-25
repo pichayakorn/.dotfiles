@@ -3,6 +3,9 @@ bun = "latest"
 uv = "latest"
 "npm:czg" = "latest"  # conventional commits (lazygit `C`)
 "github:talwat/pokeget-rs" = "latest"  # prebuilt binary, no Rust build (`ffp`)
+# ARM Linux only: Omarchy's ARM pacman build lags months behind (brew and x86 Arch are current).
+# Updated by `mise up yt-dlp`, which an Omarchy post-update hook runs.
+yt-dlp = { version = "latest", os = ["linux/arm64"] }
 
 [settings]
 python.uv_venv_auto = "create|source"

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# yt-dlp-check: is yt-dlp recent? YouTube changes often and old versions stop working.
+# Warns (with how to update the copy on PATH) and exits 1 when it's older than 60 days.
+#
+#   yt-dlp-check            warn if old (dlmusic and yt-split run this first)
+#   yt-dlp-check --quiet    exit status only (used by dotfiles-check)
+#   YT_DLP_MAX_DAYS=30 yt-dlp-check
+
+set -u
+max_days=${YT_DLP_MAX_DAYS:-60}
+quiet=false; [[ ${1:-} == --quiet ]] && quiet=true
+
+# Prefer mise's yt-dlp where it manages one (ARM), even in a shell without mise activated
+if command -v mise >/dev/null && p=$(cd ~ && mise which yt-dlp 2>/dev/null); then PATH="${p%/*}:$PATH"; fi
+bin=$(command -v yt-dlp) || { $quiet || echo "yt-dlp is not installed" >&2; exit 1; }
+version=$(yt-dlp --version 2>/dev/null) || exit 1
+day=${version:0:10} # 2026.10.21 (nightlies add .HHMMSS)
+# GNU date, then BSD date (macOS); an unknown version format counts as fine
+released=$(date -d "${day//./-}" +%s 2>/dev/null || date -j -f %Y.%m.%d "$day" +%s 2>/dev/null) || exit 0
+age=$(( ($(date +%s) - released) / 86400 ))
+(( age > max_days )) || exit 0
+
+if ! $quiet; then
+  # A mise shim links to the mise binary itself, so look at the path before resolving it
+  case "$bin $(readlink -f "$bin")" in
+    */mise/*) how="mise up yt-dlp" ;;
+    *homebrew/*|*/Cellar/*) how="brew upgrade yt-dlp" ;;
+    *" /usr/bin/"*) how="sudo pacman -Syu (Omarchy: omarchy update); if pacman's build lags, add yt-dlp to ~/.config/mise/conf.d/hachi.toml" ;;
+    *) how="yt-dlp -U" ;;
+  esac
+  echo "Warning: yt-dlp $version is $age days old; YouTube downloads may fail. Update: $how" >&2
+fi
+exit 1

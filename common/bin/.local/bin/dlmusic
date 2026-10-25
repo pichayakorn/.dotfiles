@@ -34,6 +34,11 @@ Examples:
 HELP
 }
 
+# Prefer mise's yt-dlp where it manages one (ARM), even in a shell without mise activated
+if (( $+commands[mise] )) && ytdlp=$(cd ~ && mise which yt-dlp 2>/dev/null); then
+  path=(${ytdlp:h} $path)
+fi
+
 # Check dependencies
 if ! command -v yt-dlp >/dev/null 2>&1; then
   echo "Error: yt-dlp is not installed or not in PATH." >&2
@@ -44,6 +49,9 @@ if ! command -v ffmpeg >/dev/null 2>&1; then
   echo "Error: ffmpeg is not installed or not in PATH." >&2
   exit 1
 fi
+
+# Warn (don't stop) when yt-dlp is old enough that YouTube may have broken it
+"${0:A:h}/yt-dlp-check"
 
 # Help flag check
 for arg in "$@"; do

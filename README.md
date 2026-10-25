@@ -47,7 +47,8 @@ Configs are split into [GNU Stow](https://www.gnu.org/software/stow/) packages, 
 `./install.sh --list` prints the packages for the current machine.
 
 - `common/shell/.config/shell/`: aliases, functions and fzf settings shared by bash and zsh (`rc.sh` is the entry point).
-- `common/bin/.local/bin/`: personal commands on `PATH`: `dlmusic` and `yt-split` (zsh scripts, so `zsh` is installed on every machine as their interpreter, even where bash is the login shell), plus `ssh-setup`, `dotfiles-check` and `git-ssh-sign`.
+- `common/bin/.local/bin/`: personal commands on `PATH`: `dlmusic` and `yt-split` (zsh scripts, so `zsh` is installed on every machine as their interpreter, even where bash is the login shell), plus `ssh-setup`, `dotfiles-check`, `git-ssh-sign` and `yt-dlp-check`.
+- **yt-dlp** must stay current (YouTube breaks old versions). brew and x86 Arch keep it current; on ARM Linux, Omarchy's pacman build lags months behind, so mise installs it there instead (`hachi.toml`, `os = ["linux/arm64"]`), and a post-update hook runs `mise up yt-dlp` after each `omarchy update`. `dlmusic` and `yt-split` use mise's copy even in shells without mise, and warn when yt-dlp is over 60 days old; `dotfiles-check` flags it too.
 - `standalone/git/.config/git/config`: an unmodified copy of Omarchy's git defaults (rebase on pull, auto upstream on push, histogram diffs, rerere), so the Mac behaves the same; `~/.gitconfig` is read after it and wins. `dotfiles-check` on Omarchy flags when Omarchy changes it, and `--accept` refreshes the copy.
 - `templates/gitconfig.local`: per-machine git settings (signing key, work identity), copied to `~/.gitconfig.local`.
 

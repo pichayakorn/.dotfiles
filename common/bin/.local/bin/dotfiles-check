@@ -58,6 +58,7 @@ for cmd in "${commands[@]}"; do command -v "$cmd" >/dev/null || missing+=("$cmd"
 if (( ${#missing[@]} )); then bad "missing commands: ${missing[*]} (run install.sh)"; else ok "all needed commands are installed"; fi
 # Tools from ~/.config/mise (bun, uv, czg, ...); Omarchy's lazy tools install on first use
 check "cd ~ && mise install --dry-run 2>&1 | grep -q 'all tools are installed'" "mise tools are installed" "mise tools missing (run: mise install)"
+check "yt-dlp-check --quiet" "yt-dlp is recent" "yt-dlp is over 60 days old; YouTube downloads may fail (yt-dlp-check says how to update)"
 
 check "git config --get user.email" "git identity: $(git config --get user.email)" "git user.email is not set"
 check "[[ \$(git config --get commit.gpgsign) == true ]]" "commits are signed" "commit signing is off (see ~/.gitconfig.local)"

@@ -46,7 +46,7 @@ If the repo folder already exists, the script uses it as it is (no `git pull`). 
 2. **Links** the `common/` and `omarchy/` packages into `~`. Files in the way are moved to the backup folder (see [Logs and backups](#logs-and-backups)).
 3. **Hook lines**: adds one line each to `~/.bashrc`, `~/.config/hypr/hyprland.lua` and `~/.config/tmux/tmux.conf` that loads your file, and enables `ssh-agent.socket`.
 4. **`~/.gitconfig.local`**: copied from `templates/gitconfig.local` if it doesn't exist.
-5. **`mise install`**: your tools from `~/.config/mise/conf.d/hachi.toml` (`bun`, `uv`, `czg`, `pokeget`).
+5. **`mise install`**: your tools from `~/.config/mise/conf.d/hachi.toml` (`bun`, `uv`, `czg`, `pokeget`; plus `yt-dlp` on ARM, where the pacman build lags).
 6. **SSH**: if there's no `~/.ssh/id_ed25519`, asks whether to run `ssh-setup --remote` (see [SSH and commit signing](#-ssh-and-commit-signing)).
 7. **Check**: runs `dotfiles-check`.
 
